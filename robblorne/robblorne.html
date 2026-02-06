@@ -18,6 +18,10 @@
             min-height: 100vh;
             margin: 0;
             transition: background 0.5s;
+            background-image: url('../images/background_dark.png');
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
         }
 
         .container {
@@ -46,14 +50,13 @@
             margin-bottom: 20px;
             text-shadow: 0px 0px 10px rgba(138, 15, 15, 0.4);
             font-size: 2rem;
-            transition: 0.3s;
         }
 
         .back-button {
             position: absolute; top: 20px; left: 20px;
             font-size: 0.8rem; padding: 5px 10px;
             color: #999; text-decoration: none; border: 1px solid #333;
-            font-family: sans-serif; transition: 0.3s;
+            font-family: sans-serif;
         }
 
         .theme-switch {
@@ -62,50 +65,27 @@
             text-decoration: underline; font-family: sans-serif;
         }
 
-        body.light-mode { background-color: #f0f0f0; color: #222; }
+        body.light-mode { background-image: url('../images/background_light.png'); background-color: #f0f0f0; color: #222; }
         body.light-mode .container { background-color: rgba(240, 240, 240, 0.95); border-color: #bbb; }
-        body.light-mode h1 { text-shadow: none; }
 
-        canvas {
-            border: 2px solid #1a1a1a;
-            display: block;
-            margin: 0 auto;
-            background-color: #080808;
-        }
-
-        .game-info {
-            display: flex; justify-content: space-between; align-items: center;
-            width: 100%; margin-bottom: 10px; font-size: 1rem;
-        }
-        
-        .restart-btn {
-            background: transparent; color: inherit; border: 1px solid #555;
-            padding: 5px 15px; cursor: pointer; font-family: 'Cinzel', serif;
-            text-transform: uppercase; transition: 0.3s;
-        }
-        .restart-btn:hover { border-color: #8a0f0f; color: #8a0f0f; }
-
+        canvas { border: 2px solid #1a1a1a; display: block; margin: 0 auto; background-color: #080808; }
+        .game-info { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; font-size: 1rem; }
+        .restart-btn { background: transparent; color: inherit; border: 1px solid #555; padding: 5px 15px; cursor: pointer; font-family: 'Cinzel', serif; text-transform: uppercase; }
         #blood-val, #total-points { color: #8a0f0f; font-weight: bold; }
     </style>
 </head>
 <body class="dark-mode">
 
     <div class="container">
-        <a href="#" class="back-button">Powrót</a>
+        <a href="../index.html" class="back-button">Powrót</a>
         <div class="theme-switch" onclick="toggleTheme()">Zmień motyw</div>
-        
         <h1 id="game-title">Robblorne</h1>
-        
         <div class="game-info">
             <div>KROPLE: <span id="blood-val">0 / 0</span></div>
             <button class="restart-btn" onclick="triggerReset()">Restart [R]</button>
         </div>
-
         <canvas id="gameCanvas"></canvas>
-
-        <div style="margin-top: 15px; font-size: 1.1rem;">
-            ZEBRANA KREW: <span id="total-points">0</span>
-        </div>
+        <div style="margin-top: 15px; font-size: 1.1rem;">ZEBRANA KREW: <span id="total-points">0</span></div>
     </div>
 
 <script>
@@ -114,21 +94,23 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const titleElem = document.getElementById('game-title');
 
-if (localStorage.getItem('theme') === 'light') {
-    document.body.classList.add('light-mode');
-}
+if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 
+// SYSTEM KOORDYNATÓW:
+// Indeks y=3 w tablicy to Rząd Wizualny 6
+// Indeks x=4 w tablicy to Kolumna Wizualna D
+// Indeks x=11 w tablicy to Kolumna Wizualna K
 const initialMap = [
-    "#############",
-    "#R..B......S#",
-    "#...B..######",
-    "#.K.B.......#",
-    "#####D#######",
-    "#S..........#",
-    "#######..S..#",
-    "#.......#####",
-    "#S..B......E#",
-    "#############"
+    "#############", // 9
+    "#R..B......S#", // 8
+    "#...B..######", // 7
+    "#..........K#", // 6 (6D puste - index 4, 6K ma klucz - index 11)
+    "#####D#######", // 5
+    "#S..........#", // 4
+    "#######..S..#", // 3
+    "#.......#####", // 2
+    "#S..B......E#", // 1
+    "#############"  // 0 / A-L
 ];
 
 let grid, player, bloodTotal, bloodCollected, keys, frame, isGameOver;
@@ -141,9 +123,9 @@ function triggerReset() {
     grid = initialMap.map(row => row.split(''));
     bloodCollected = 0; keys = 0; frame = 0;
     bloodTotal = (initialMap.join('').match(/S/g) || []).length;
-    enemies = [{ x: 11, y: 3, dir: -1, icon: "🕷️" }];
-    titleElem.innerText = "ROBBLORNE";
-    titleElem.style.color = "";
+    // Pająk na rzędzie 6, startuje obok klucza
+    enemies = [{ x: 10, y: 3, dir: -1, icon: "🕷️" }];
+    titleElem.innerText = "ROBBLORNE"; titleElem.style.color = "";
     updateUI();
 }
 
@@ -155,8 +137,7 @@ function updateUI() {
 
 function drawHunter(px, py) {
     ctx.save();
-    ctx.font = "42px serif";
-    ctx.textAlign = "center";
+    ctx.font = "42px serif"; ctx.textAlign = "center";
     ctx.fillText("🧛", px + 32, py + 48);
     ctx.strokeStyle = "#5a4a3a"; ctx.lineWidth = 3; ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(px + 44, py + 35); ctx.lineTo(px + 48, py + 58); ctx.stroke();
@@ -170,55 +151,30 @@ function drawTile(x, y, type) {
     const px = x * TILE_SIZE; const py = y * TILE_SIZE;
     const isLight = document.body.classList.contains('light-mode');
     const PADDING = 8;
-
-    ctx.fillStyle = isLight ? "#e0e0e0" : "#0c0d11"; 
-    ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
-    ctx.strokeStyle = isLight ? "#ccc" : "#1a1a1a"; 
-    ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+    ctx.fillStyle = isLight ? "#e0e0e0" : "#0c0d11"; ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+    ctx.strokeStyle = isLight ? "#ccc" : "#1a1a1a"; ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
 
     if (type === '#') {
-        ctx.fillStyle = isLight ? "#bbb" : "#1a1e26"; 
-        ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-        ctx.strokeStyle = isLight ? "#999" : "#333";
-        ctx.strokeRect(px + 8, py + 8, TILE_SIZE - 16, TILE_SIZE - 16);
-        
-        ctx.font = "bold 14px Arial";
-        ctx.fillStyle = isLight ? "#666" : "#ffffff";
-        ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-
-        if (x === 0 && y < grid.length - 1) {
-            ctx.fillText((grid.length - 1) - y, px + PADDING, py + TILE_SIZE - PADDING);
-        } else if (y === grid.length - 1 && x > 0) {
-            ctx.fillText(String.fromCharCode(64 + x), px + PADDING, py + TILE_SIZE - PADDING);
-        }
-    } else if (type === 'R') {
-        drawHunter(px, py);
-        player = { x, y };
-    } else if (type === 'S') {
+        ctx.fillStyle = isLight ? "#bbb" : "#1a1e26"; ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        ctx.strokeStyle = isLight ? "#999" : "#333"; ctx.strokeRect(px + 8, py + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+        ctx.font = "bold 14px Arial"; ctx.fillStyle = "#ffffff"; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+        if (x === 0 && y < grid.length - 1) ctx.fillText((grid.length - 1) - y, px + PADDING, py + TILE_SIZE - PADDING);
+        else if (y === grid.length - 1 && x > 0) ctx.fillText(String.fromCharCode(64 + x), px + PADDING, py + TILE_SIZE - PADDING);
+    } else if (type === 'R') { drawHunter(px, py); player = { x, y }; }
+    else if (type === 'S') {
         const pulse = Math.sin(frame * 0.1) * 3;
-        ctx.font = `${32 + pulse}px serif`; 
-        ctx.shadowBlur = 15; ctx.shadowColor = "red";
-        ctx.fillText("🩸", px + 15 - pulse/2, py + 45 + pulse/2);
-        ctx.shadowBlur = 0;
+        ctx.font = `${32 + pulse}px serif`; ctx.shadowBlur = 15; ctx.shadowColor = "red";
+        ctx.fillText("🩸", px + 15 - pulse/2, py + 45 + pulse/2); ctx.shadowBlur = 0;
     } else if (type === 'B') {
         ctx.fillStyle = "#2a1515"; ctx.fillRect(px + 10, py + 8, TILE_SIZE - 20, TILE_SIZE - 16);
         ctx.strokeStyle = "#444"; ctx.strokeRect(px + 14, py + 12, TILE_SIZE - 28, TILE_SIZE - 24);
-    } else if (type === 'K') {
-        ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45);
-    } else if (type === 'D') {
-        ctx.fillStyle = "#300000"; ctx.fillRect(px+2, py+2, TILE_SIZE-4, TILE_SIZE-4);
-        ctx.strokeStyle = "#c5a059"; ctx.strokeRect(px+6, py+6, TILE_SIZE-12, TILE_SIZE-12);
-        ctx.font = "30px serif"; ctx.fillText("⛩️", px + 15, py + 45);
+    } else if (type === 'K') { ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45); }
+    else if (type === 'D') {
+        ctx.fillStyle = "#3a0000"; ctx.fillRect(px + 10, py + 10, 20, TILE_SIZE - 20); ctx.fillRect(px + 34, py + 10, 20, TILE_SIZE - 20);
+        ctx.strokeStyle = "#c5a059"; ctx.lineWidth = 2; ctx.strokeRect(px + 12, py + 12, 16, TILE_SIZE - 24); ctx.strokeRect(px + 36, py + 12, 16, TILE_SIZE - 24);
     } else if (type === 'E') {
-        // MECHANIKA NIEWIDZIALNOŚCI:
-        if (bloodCollected < bloodTotal) {
-            // Renderuj jako zwykłą podłogę
-            return; 
-        }
-        // Jeśli zebrano wszystko - renderuj Katedrę
-        ctx.font = "45px serif"; ctx.shadowBlur = 20;
-        ctx.shadowColor = "#c5a059"; ctx.fillText("⛪", px + 10, py + 50);
-        ctx.shadowBlur = 0;
+        if (bloodCollected < bloodTotal) return;
+        ctx.font = "45px serif"; ctx.shadowBlur = 20; ctx.shadowColor = "#c5a059"; ctx.fillText("⛪", px + 10, py + 50); ctx.shadowBlur = 0;
     }
 }
 
@@ -228,8 +184,10 @@ function updateEnemies() {
     if (enemyUpdateTick % 20 === 0) {
         enemies.forEach(en => {
             let nextX = en.x + en.dir;
+            if (nextX < 0 || nextX >= grid[0].length) { en.dir *= -1; return; }
             let target = grid[en.y][nextX];
-            if (target === '#' || target === 'B' || target === 'D' || target === 'E') {
+            // BLOKADA: Pająk odbija się od klucza (K)
+            if (target === '#' || target === 'B' || target === 'D' || target === 'E' || target === 'K') {
                 en.dir *= -1;
                 nextX = en.x + en.dir;
             }
@@ -239,31 +197,15 @@ function updateEnemies() {
     }
 }
 
-function die() {
-    isGameOver = true;
-    titleElem.innerText = "POCHŁONĘŁA CIĘ CIEMNOŚĆ";
-    titleElem.style.color = "red";
-    setTimeout(triggerReset, 1500);
-}
-
-function win() {
-    isGameOver = true;
-    titleElem.innerText = "KOSZMAR PRZEZWYCIĘŻONY";
-    titleElem.style.color = "#c5a059";
-    setTimeout(triggerReset, 3000);
-}
+function die() { isGameOver = true; titleElem.innerText = "POCHŁONĘŁA CIĘ CIEMNOŚĆ"; titleElem.style.color = "red"; setTimeout(triggerReset, 1500); }
+function win() { isGameOver = true; titleElem.innerText = "KOSZMAR PRZEZWYCIĘŻONY"; titleElem.style.color = "#c5a059"; setTimeout(triggerReset, 3000); }
 
 function update() {
-    canvas.width = grid[0].length * TILE_SIZE;
-    canvas.height = grid.length * TILE_SIZE;
+    canvas.width = grid[0].length * TILE_SIZE; canvas.height = grid.length * TILE_SIZE;
     updateEnemies();
     grid.forEach((row, y) => { row.forEach((tile, x) => drawTile(x, y, tile)); });
-    enemies.forEach(en => {
-        ctx.font = "40px serif";
-        ctx.fillText(en.icon, en.x * TILE_SIZE + 12, en.y * TILE_SIZE + 48);
-    });
-    updateUI();
-    frame++; requestAnimationFrame(update);
+    enemies.forEach(en => { ctx.font = "40px serif"; ctx.fillText(en.icon, en.x * TILE_SIZE + 12, en.y * TILE_SIZE + 48); });
+    updateUI(); frame++; requestAnimationFrame(update);
 }
 
 window.onkeydown = (e) => {
@@ -273,11 +215,9 @@ window.onkeydown = (e) => {
     if (e.key === "ArrowUp") dy = -1; if (e.key === "ArrowDown") dy = 1;
     if (e.key === "ArrowLeft") dx = -1; if (e.key === "ArrowRight") dx = 1;
     if (dx === 0 && dy === 0) return;
-    
-    const nx = player.x + dx; const ny = player.y + dy;
+    const nx = player.x + dx, ny = player.y + dy;
     if (!grid[ny] || !grid[ny][nx]) return;
     if (enemies.some(en => en.x === nx && en.y === ny)) { die(); return; }
-
     const target = grid[ny][nx];
     if (target === '.' || target === 'S' || target === 'K') {
         if (target === 'S') { bloodCollected++; totalScore++; }
@@ -285,27 +225,15 @@ window.onkeydown = (e) => {
         grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
     } else if (target === 'B') {
         const bx = nx + dx, by = ny + dy;
-        const isSpiderInTheWay = enemies.some(en => en.x === bx && en.y === by);
-        if (grid[by] && grid[by][bx] === '.' && !isSpiderInTheWay) {
+        if (grid[by] && grid[by][bx] === '.' && !enemies.some(en => en.x === bx && en.y === by)) {
             grid[by][bx] = 'B'; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
         }
-    } else if (target === 'D' && keys > 0) {
-        keys--; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
-    } else if (target === 'E') {
-        // Blokada wejścia dopóki nie ma wszystkich kropel
-        if (bloodCollected >= bloodTotal) {
-            win();
-        }
-    }
+    } else if (target === 'D' && keys > 0) { keys--; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R'; }
+    else if (target === 'E' && bloodCollected >= bloodTotal) win();
 };
 
-function toggleTheme() {
-    document.body.classList.toggle('light-mode');
-    localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-}
-
-triggerReset();
-update();
+function toggleTheme() { document.body.classList.toggle('light-mode'); localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
+triggerReset(); update();
 </script>
 </body>
 </html>
