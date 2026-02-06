@@ -10,7 +10,6 @@
 <body>
     <div class="container">
         <a href="../index.html" class="back-button" data-i18n="backButton">Powrót</a>
-        
         <div class="theme-switch" data-i18n="themeSwitch"></div>
         
         <h1 id="game-title">Robblorne</h1>
@@ -25,15 +24,16 @@
         </div>
 
         <div class="score-info">
+            <span style="margin-right: 15px;">LEVEL: <span id="level-val">1</span></span>
             <span data-i18n="totalBloodLabel">ZEBRANA KREW:</span> <span id="total-points">0</span>
         </div>
         
         <div class="mobile-hint" data-i18n="mobileHint">Przesuń palcem, aby wykonać krok</div>
-
         <div class="controls-hint" data-i18n="controlsHint">Strzałki: Ruch | R: Restart</div>
     </div>
 
     <script src="js/lang.js"></script>
+    <script src="js/levels.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>
