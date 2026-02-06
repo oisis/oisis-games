@@ -137,13 +137,31 @@ function updateUI() {
 
 function drawHunter(px, py) {
     ctx.save();
+    
+    // 1. Korpus (Płaszcz widziany do pasa)
+    ctx.fillStyle = "#1a1a22";
+    ctx.beginPath();
+    ctx.moveTo(px + 18, py + 42); // Lewe ramię
+    ctx.lineTo(px + 46, py + 42); // Prawe ramię
+    ctx.lineTo(px + 52, py + 62); // Prawy bok/pas
+    ctx.lineTo(px + 12, py + 62); // Lewy bok/pas
+    ctx.fill();
+
+    // 2. Detal kołnierza
+    ctx.fillStyle = "#3a0a0a";
+    ctx.fillRect(px + 26, py + 42, 12, 6);
+
+    // 3. Głowa
     ctx.font = "42px serif"; ctx.textAlign = "center";
-    ctx.fillText("🧛", px + 32, py + 48);
+    ctx.fillText("🧛", px + 32, py + 46);
+    
+    // 4. Laska-miecz
     ctx.strokeStyle = "#5a4a3a"; ctx.lineWidth = 3; ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(px + 44, py + 35); ctx.lineTo(px + 48, py + 58); ctx.stroke();
     const shine = Math.abs(Math.sin(frame * 0.1)) * 255;
     ctx.strokeStyle = `rgb(${shine}, ${shine}, ${shine})`; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(px + 45, py + 40); ctx.lineTo(px + 47, py + 54); ctx.stroke();
+    
     ctx.restore();
 }
 
