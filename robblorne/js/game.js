@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let enemyUpdateTick = 0;
     let moveInterval = null;
     let lastDirection = { dx: 0, dy: 0 };
+    let activeKey = null; // Śledzenie aktualnie wciśniętego klawisza
 
     function safeGetText(key) {
         return (typeof getText === 'function') ? getText(key) : key;
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerReset(fullReset = false) {
         isGameOver = false;
         stopContinuousMove();
+        activeKey = null;
         
         if (fullReset) {
             currentLevelIndex = 0;
@@ -114,11 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // GŁÓWNA FUNKCJA ŚMIERCI
     function die() { 
         if (isGameOver) return;
         lives--;
         stopContinuousMove();
+        activeKey = null;
         updateUI();
         if (lives <= 0) {
             isGameOver = true;
@@ -133,10 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // FUNKCJA RESTARTU POZIOMU KOSZTEM ŻYCIA
     function manualRestart() {
         if (isGameOver) return;
-        die(); // Po prostu wywołujemy śmierć - odejmie życie i zresetuje mapę
+        die();
     }
     
     function levelComplete() {
@@ -182,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (target === 'E' && bloodCollected >= bloodTotal) levelComplete();
     }
 
+    // PŁYNNY RUCH (Używany przez klawiaturę i dotyk)
     function startContinuousMove(dx, dy) {
         if (lastDirection.dx === dx && lastDirection.dy === dy) return;
         stopContinuousMove();
@@ -195,15 +197,27 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDirection = { dx: 0, dy: 0 };
     }
 
+    // STEROWANIE KLAWIATURĄ (Z POPRAWIONYM RUCHEM CIĄGŁYM)
     window.onkeydown = (e) => {
-        if (e.key.toLowerCase() === 'r') { manualRestart(); return; } // Zmiana tutaj
-        if (e.repeat) return; 
-        if (e.key === "ArrowUp") movePlayer(0, -1);
-        if (e.key === "ArrowDown") movePlayer(0, 1);
-        if (e.key === "ArrowLeft") movePlayer(-1, 0);
-        if (e.key === "ArrowRight") movePlayer(1, 0);
+        if (isGameOver) return;
+        if (e.key.toLowerCase() === 'r') { manualRestart(); return; }
+        if (e.repeat) return; // Ważne: ignorujemy systemowe powtarzanie, bo mamy własny Interwał
+
+        activeKey = e.key;
+        if (e.key === "ArrowUp") startContinuousMove(0, -1);
+        else if (e.key === "ArrowDown") startContinuousMove(0, 1);
+        else if (e.key === "ArrowLeft") startContinuousMove(-1, 0);
+        else if (e.key === "ArrowRight") startContinuousMove(1, 0);
     };
 
+    window.onkeyup = (e) => {
+        if (e.key === activeKey) {
+            stopContinuousMove();
+            activeKey = null;
+        }
+    };
+
+    // STEROWANIE DOTYKOWE
     let touchStartX = 0, touchStartY = 0;
     document.body.addEventListener('touchstart', (e) => {
         if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
@@ -222,13 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('touchend', stopContinuousMove);
 
     const restartBtn = document.getElementById('restartBtn');
-    if(restartBtn) restartBtn.addEventListener('click', manualRestart); // Zmiana tutaj
+    if(restartBtn) restartBtn.addEventListener('click', manualRestart);
 
     const themeBtn = document.querySelector('.theme-switch');
     if (themeBtn) themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('light-mode');
         localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-        applyTranslations();
+        if (typeof applyTranslations === 'function') applyTranslations();
     });
 
     triggerReset(false);
