@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+
+body {
+    background-color: #050505;
+    color: #b0b0b0;
+    font-family: 'Cinzel', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-image: url('../../images/background_dark.png');
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+    touch-action: none; /* Blokada gestów przeglądarki */
+}
+
+.container {
+    border: 1px solid #333;
+    padding: 30px;
+    background-color: rgba(8, 8, 8, 0.95);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
+    text-align: center;
+    position: relative;
+    max-width: 95vw;
+    transition: all 0.3s ease;
+}
+
+.container::after {
+    content: "";
+    position: absolute;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
+    border: 1px solid #5e0b0b;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+h1 {
+    color: #8a0f0f;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    text-shadow: 0px 0px 10px rgba(138, 15, 15, 0.4);
+    font-size: 2rem;
+}
+
+/* --- PRZYCISK POWROTU --- */
+.back-button {
+    position: absolute; top: 20px; left: 20px;
+    font-size: 0.8rem; padding: 5px 10px;
+    color: #999; text-decoration: none; border: 1px solid #333;
+    font-family: sans-serif;
+    transition: all 0.3s;
+    z-index: 20;
+}
+.back-button:hover {
+    color: #ff3333;
+    border-color: #8a0f0f;
+    box-shadow: 0 0 10px #8a0f0f;
+}
+
+/* --- PRZYCISK MOTYWU (ODWRÓCONY) --- */
+.theme-switch {
+    position: absolute; top: 20px; right: 20px;
+    cursor: pointer; font-size: 0.8rem; 
+    font-family: sans-serif; z-index: 20;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background-color: #e0e0e0; /* Jasne tło */
+    color: #1a1a1a;            /* Ciemny tekst */
+    font-weight: bold;
+    transition: all 0.3s;
+    text-align: center;
+    min-width: 60px;
+}
+.theme-switch:hover {
+    background-color: #fff;
+    color: #000;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* --- LIGHT MODE --- */
+body.light-mode { 
+    background-image: url('../../images/background_light.png'); 
+}
+body.light-mode .container { 
+    background-color: rgba(240, 240, 240, 0.95); 
+    border-color: #bbb; 
+}
+body.light-mode .back-button {
+    color: #555; border-color: #bbb;
+}
+body.light-mode .back-button:hover {
+    color: #cc0000; border-color: #cc0000;
+}
+body.light-mode .theme-switch {
+    background-color: #1a1a1a; /* Ciemne tło */
+    color: #e0e0e0;            /* Jasny tekst */
+    border-color: #000;
+}
+body.light-mode .theme-switch:hover {
+    background-color: #000;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+}
+
+/* --- GAME UI --- */
+canvas { 
+    border: 2px solid #1a1a1a; 
+    display: block; 
+    margin: 0 auto; 
+    background-color: #080808; 
+    max-width: 100%;
+    height: auto;
+}
+.game-info { 
+    display: flex; justify-content: space-between; align-items: center; 
+    width: 100%; margin-bottom: 10px; font-size: 1rem; 
+}
+.restart-btn { 
+    background: transparent; color: inherit; border: 1px solid #555; 
+    padding: 5px 15px; cursor: pointer; font-family: 'Cinzel', serif; 
+    text-transform: uppercase; 
+}
+.restart-btn:hover { border-color: #8a0f0f; color: #ff3333; }
+#blood-val, #total-points { color: #8a0f0f; font-weight: bold; }
+
+.score-info { margin-top: 15px; font-size: 1.1rem; }
+.controls-hint { margin-top: 10px; font-size: 0.8rem; color: #666; font-style: italic; font-family: sans-serif; }
+
+/* --- MOBILE CONTROLS --- */
+.mobile-controls {
+    display: none;
+    margin-top: 20px;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+.dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.dpad button {
+    width: 50px; height: 50px;
+    font-size: 20px;
+    background: rgba(0,0,0,0.5);
+    color: #ccc;
+    border: 1px solid #444;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.dpad-middle {
+    display: flex;
+    gap: 5px;
+    margin: 5px 0;
+}
+.mobile-restart {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: #3a0a0a;
+    color: #fff;
+    border: 1px solid #5e0b0b;
+    font-size: 24px;
+}
+
+/* --- RESPONSYWNOŚĆ --- */
+@media (max-width: 768px) {
+    .container {
+        padding-top: 60px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    h1 { font-size: 1.5rem; margin-top: 0; }
+    .game-info { font-size: 0.9rem; }
+    .restart-btn { display: none; } /* Ukrywamy przycisk tekstowy na mobile */
+    .mobile-controls { display: flex; }
+    .controls-hint { display: none; }
+    
+    .back-button { top: 15px; left: 15px; }
+    .theme-switch { top: 15px; right: 15px; }
+}
