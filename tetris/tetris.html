@@ -471,6 +471,49 @@
             downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveDown(); });
         }
 
+        // Obsługa gestów dotykowych (swipe) na obszarze gry
+        let touchStartX = null;
+        let touchStartY = null;
+
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            if (!touchStartX || !touchStartY) return;
+
+            let touchEndX = e.changedTouches[0].clientX;
+            let touchEndY = e.changedTouches[0].clientY;
+
+            let diffX = touchEndX - touchStartX;
+            let diffY = touchEndY - touchStartY;
+
+            // Reset
+            touchStartX = null;
+            touchStartY = null;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // Ruch poziomy
+                if (Math.abs(diffX) > 30) {
+                    if (diffX > 0) { p.moveRight(); }
+                    else { p.moveLeft(); }
+                    dropStart = Date.now();
+                }
+            } else {
+                // Ruch pionowy
+                if (diffY > 30) {
+                    p.moveDown();
+                } else if (Math.abs(diffX) < 10 && Math.abs(diffY) < 10) {
+                    // Tapnięcie - obrót
+                    p.rotate();
+                    dropStart = Date.now();
+                }
+            }
+        }, { passive: false });
+
         function CONTROL(event){
             if(event.keyCode == 37){ p.moveLeft(); dropStart = Date.now(); }
             else if(event.keyCode == 38){ p.rotate(); dropStart = Date.now(); }
