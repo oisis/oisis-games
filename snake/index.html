@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Snake - The Old Hunter</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-button" data-i18n="backButton">Powrót</a>
+        
+        <div class="theme-switch" data-i18n="themeSwitch"></div>
+        
+        <h1 data-i18n="mainTitle">Snake</h1>
+        
+        <div class="game-wrapper">
+            <div class="game-area">
+                <canvas id="gameCanvas"></canvas>
+                <div id="score">Echoes of Blood: 0</div>
+                <div class="controls" data-i18n="controlsHint">Im dłużej głodujesz, tym szybciej pędzisz...</div>
+            </div>
+            
+            <div class="scoreboard">
+                <h3 data-i18n="scoreboardTitle">Tablica Wyników</h3>
+                <ul id="scoreList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="joystick-base">
+        <div id="joystick-stick"></div>
+    </div>
+
+    <script src="js/lang.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hunter's Dream - Spis Gier</title>
+    <title data-i18n="pageTitle">Hunter's Dream - Spis Gier</title>
     <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
     <style>
         body {
@@ -19,6 +19,7 @@
             background-position: center;
             background-size: cover;
             background-attachment: fixed;
+            transition: background 0.3s, color 0.3s;
         }
         .container {
             border: 1px solid #333;
@@ -34,7 +35,6 @@
             flex-direction: column;
             justify-content: center;
         }
-        /* Ozdobna ramka wewnętrzna */
         .container::after {
             content: "";
             position: absolute;
@@ -81,33 +81,56 @@
             color: #444;
             font-style: italic;
         }
+        
         .lang-switch {
             position: absolute;
             top: 20px;
             right: 25px;
             font-size: 0.9rem;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
         }
-        .lang-switch a, .lang-switch span {
-            display: inline;
+        .lang-options {
+            margin-bottom: 5px;
+        }
+        .lang-btn {
+            cursor: pointer;
             padding: 0 5px;
             font-size: 1rem;
-            letter-spacing: 0;
+            transition: color 0.3s;
         }
-        .lang-switch a:hover {
-            transform: none;
-            background: none;
+        .lang-btn:hover {
+            color: #b0b0b0;
             text-shadow: 0 0 5px #ff3333;
         }
+        .lang-btn.active {
+            color: #8a0f0f;
+            font-weight: bold;
+            cursor: default;
+        }
+        
+        /* --- STYL PRZYCISKU MOTYWU (KONTRASTOWY) --- */
         .theme-switch {
-            margin-top: 10px;
             cursor: pointer;
-            font-size: 0.9rem;
-            color: #777;
-            text-decoration: underline;
+            font-size: 0.8rem;
+            background-color: #e0e0e0; /* Jasne tło na start */
+            color: #1a1a1a;            /* Ciemny tekst */
+            border: 1px solid #333;
+            padding: 5px 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
         }
         .theme-switch:hover {
-            color: #b0b0b0;
+            background-color: #fff;
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
         /* Light Mode Styles */
@@ -140,25 +163,84 @@
         body.light-mode .footer {
             color: #555;
         }
+
+        /* --- STYL PRZYCISKU MOTYWU W TRYBIE JASNYM (ODWRÓCONY) --- */
+        body.light-mode .theme-switch {
+            background-color: #1a1a1a; /* Ciemne tło */
+            color: #e0e0e0;            /* Jasny tekst */
+            border-color: #000;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        body.light-mode .theme-switch:hover {
+            background-color: #000;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="lang-switch">
-            <span style="color: #8a0f0f; font-weight: bold;">PL</span> | <a href="index_en.html">EN</a>
-            <div class="theme-switch" onclick="toggleTheme()">Zmień motyw</div>
+            <div class="lang-options">
+                <span class="lang-btn" onclick="setLanguage('pl')" id="btn-pl">PL</span> | 
+                <span class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</span>
+            </div>
+            <div class="theme-switch" onclick="toggleTheme()" id="themeBtn"></div>
         </div>
-        <h1>Dostępne Gry</h1>
+
+        <h1 data-i18n="headerTitle">Dostępne Gry</h1>
+        
         <ul>
-            <li><a href="snake/snake.html">Snake</a></li>
+            <li><a href="snake/index.html">Snake</a></li>
             <li><a href="tetris/tetris.html">Tetris</a></li>
             <li><a href="robblorne/robblorne.html">Robblorne</a></li>
         </ul>
+        
         <div class="footer">
             "We are born of the blood, made men by the blood, undone by the blood."
         </div>
     </div>
+
     <script>
+        // --- 1. SŁOWNIK TŁUMACZEŃ ---
+        const MenuTranslations = {
+            pl: {
+                pageTitle: "Hunter's Dream - Spis Gier",
+                headerTitle: "Dostępne Gry",
+                // Co ma pisać na przycisku?
+                btnToLight: "JASNY", // Gdy jest ciemno, proponujemy JASNY
+                btnToDark: "CIEMNY"  // Gdy jest jasno, proponujemy CIEMNY
+            },
+            en: {
+                pageTitle: "Hunter's Dream - Game List",
+                headerTitle: "Available Games",
+                btnToLight: "LIGHT",
+                btnToDark: "DARK"
+            }
+        };
+
+        // --- 2. OBSŁUGA JĘZYKA ---
+        function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
+            updateMenuText(lang);
+        }
+
+        function updateMenuText(lang) {
+            const t = MenuTranslations[lang];
+            document.title = t.pageTitle;
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.innerText = t[key];
+            });
+
+            document.getElementById('btn-pl').classList.toggle('active', lang === 'pl');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+            
+            updateThemeButton();
+        }
+
+        // --- 3. OBSŁUGA MOTYWU ---
         if (localStorage.getItem('theme') === 'light') {
             document.body.classList.add('light-mode');
         }
@@ -167,7 +249,25 @@
             document.body.classList.toggle('light-mode');
             const isLight = document.body.classList.contains('light-mode');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeButton();
         }
+
+        function updateThemeButton() {
+            const lang = localStorage.getItem('lang') || 'pl';
+            const isLight = document.body.classList.contains('light-mode');
+            const btn = document.getElementById('themeBtn');
+            const t = MenuTranslations[lang];
+
+            if (isLight) {
+                btn.innerText = t.btnToDark;
+            } else {
+                btn.innerText = t.btnToLight;
+            }
+        }
+
+        // START
+        const savedLang = localStorage.getItem('lang') || 'pl';
+        setLanguage(savedLang);
     </script>
 </body>
 </html>
