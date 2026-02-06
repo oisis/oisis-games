@@ -165,6 +165,55 @@
             border-bottom-color: #ddd;
             color: #555;
         }
+
+        .mobile-controls {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .mobile-controls button {
+            font-size: 24px;
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            border: 1px solid #333;
+            background-color: rgba(0,0,0,0.5);
+            color: #b0b0b0;
+            cursor: pointer;
+        }
+
+        body.light-mode .mobile-controls button {
+            border-color: #bbb;
+            background-color: rgba(255,255,255,0.5);
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+            .game-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            .controls {
+                display: none;
+            }
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 10px;
+            }
+            .back-button, .theme-switch {
+                font-size: 0.8rem;
+                padding: 3px 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -177,6 +226,12 @@
                 <canvas id="gameCanvas"></canvas>
                 <div id="score">Echoes of Blood: 0</div>
                 <div class="controls">Strzałki: Ruch/Obrót</div>
+                <div class="mobile-controls">
+                    <button id="left-btn">◄</button>
+                    <button id="rotate-btn">↻</button>
+                    <button id="right-btn">►</button>
+                    <button id="down-btn">▼</button>
+                </div>
             </div>
             <div class="scoreboard">
                 <h3>Tablica Wyników</h3>
@@ -397,6 +452,24 @@
         }
 
         document.addEventListener("keydown", CONTROL);
+
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        const rotateBtn = document.getElementById('rotate-btn');
+        const downBtn = document.getElementById('down-btn');
+
+        if(leftBtn) {
+            leftBtn.addEventListener('click', () => { p.moveLeft(); dropStart = Date.now(); });
+            rightBtn.addEventListener('click', () => { p.moveRight(); dropStart = Date.now(); });
+            rotateBtn.addEventListener('click', () => { p.rotate(); dropStart = Date.now(); });
+            downBtn.addEventListener('click', () => { p.moveDown(); });
+
+            // Touch events for mobile
+            leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveLeft(); dropStart = Date.now(); });
+            rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveRight(); dropStart = Date.now(); });
+            rotateBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.rotate(); dropStart = Date.now(); });
+            downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveDown(); });
+        }
 
         function CONTROL(event){
             if(event.keyCode == 37){ p.moveLeft(); dropStart = Date.now(); }
