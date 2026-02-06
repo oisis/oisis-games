@@ -89,16 +89,90 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawTile(x, y, type) {
         const px = x * TILE_SIZE; const py = y * TILE_SIZE;
         const isLight = document.body.classList.contains('light-mode');
+        
         ctx.fillStyle = isLight ? "#e0e0e0" : "#0c0d11"; ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
         ctx.strokeStyle = isLight ? "#ccc" : "#1a1a1a"; ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+
         if (type === '#') {
             ctx.fillStyle = isLight ? "#bbb" : "#1a1e26"; ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-        } else if (type === 'R') { drawHunter(px, py); }
-        else if (type === 'S') { ctx.font = "32px serif"; ctx.fillText("🩸", px + 15, py + 45); }
-        else if (type === 'B') { ctx.fillStyle = "#2a1515"; ctx.fillRect(px + 10, py + 8, TILE_SIZE - 20, TILE_SIZE - 16); }
-        else if (type === 'K') { ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45); }
-        else if (type === 'D') { ctx.fillStyle = "#3a0000"; ctx.fillRect(px + 10, py + 10, 44, TILE_SIZE - 20); }
-        else if (type === 'E' && bloodCollected >= bloodTotal) { ctx.font = "45px serif"; ctx.fillText("⛪", px + 10, py + 50); }
+        } else if (type === 'R') { 
+            drawHunter(px, py); 
+        } else if (type === 'S') { 
+            ctx.font = `32px serif`; ctx.fillText("🩸", px + 15, py + 45); 
+        } else if (type === 'B') {
+            // --- GRAFIKA TRUMNY ---
+            ctx.save();
+            ctx.fillStyle = "#2b1d15"; // Ciemne, stare drewno
+            ctx.strokeStyle = "#120a06";
+            ctx.lineWidth = 2;
+
+            // Kształt trumny (sześciokąt)
+            ctx.beginPath();
+            ctx.moveTo(px + 22, py + 8);  // Góra lewo
+            ctx.lineTo(px + 42, py + 8);  // Góra prawo
+            ctx.lineTo(px + 52, py + 24); // Środek prawo (najszerszy punkt)
+            ctx.lineTo(px + 44, py + 56); // Dół prawo
+            ctx.lineTo(px + 20, py + 56); // Dół lewo
+            ctx.lineTo(px + 12, py + 24); // Środek lewo
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Słoje drewna / zdobienia
+            ctx.strokeStyle = "rgba(0,0,0,0.3)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px + 20, py + 24); ctx.lineTo(px + 44, py + 24);
+            ctx.moveTo(px + 32, py + 8); ctx.lineTo(px + 32, py + 56);
+            ctx.stroke();
+
+            // Krzyż na wieku
+            ctx.strokeStyle = "#c5a059"; // Złoty/mosiężny krzyż
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(px + 32, py + 18); ctx.lineTo(px + 32, py + 42); // Pion
+            ctx.moveTo(px + 24, py + 28); ctx.lineTo(px + 40, py + 28); // Poziom
+            ctx.stroke();
+
+            ctx.restore();
+        } else if (type === 'K') { 
+            ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45); 
+        } else if (type === 'D') {
+            // --- BRAMA Z PRĘTÓW ---
+            const gateColor = isLight ? "#111" : "#eee";
+            ctx.save();
+            ctx.strokeStyle = gateColor;
+            ctx.lineWidth = 2;
+
+            ctx.fillStyle = isLight ? "#888" : "#333";
+            ctx.fillRect(px + 4, py + 4, 6, TILE_SIZE - 8);
+            ctx.fillRect(px + TILE_SIZE - 10, py + 4, 6, TILE_SIZE - 8);
+
+            ctx.beginPath();
+            ctx.arc(px + TILE_SIZE/2, py + 25, 22, Math.PI, 0);
+            ctx.stroke();
+
+            for(let i = 14; i <= TILE_SIZE - 14; i += 6) {
+                if (i === TILE_SIZE/2 - 2 || i === TILE_SIZE/2 + 4) continue;
+                ctx.beginPath();
+                ctx.moveTo(px + i, py + 15);
+                ctx.lineTo(px + i, py + TILE_SIZE - 6);
+                ctx.stroke();
+            }
+
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(px + TILE_SIZE/2, py + 5);
+            ctx.lineTo(px + TILE_SIZE/2, py + TILE_SIZE - 4);
+            ctx.stroke();
+
+            ctx.fillStyle = "#c5a059";
+            ctx.beginPath(); ctx.arc(px + TILE_SIZE/2 - 6, py + TILE_SIZE/2, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(px + TILE_SIZE/2 + 6, py + TILE_SIZE/2, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        } else if (type === 'E' && bloodCollected >= bloodTotal) { 
+            ctx.font = "45px serif"; ctx.fillText("⛪", px + 10, py + 50); 
+        }
     }
 
     function updateEnemies() {
@@ -200,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isGameOver) return;
         if (e.key.toLowerCase() === 'r') { manualRestart(); return; }
         if (e.repeat) return; 
-
         activeKey = e.key;
         if (e.key === "ArrowUp") startContinuousMove(0, -1);
         else if (e.key === "ArrowDown") startContinuousMove(0, 1);
@@ -239,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeBtn) themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('light-mode');
         localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-        applyTranslations();
+        if (typeof applyTranslations === 'function') applyTranslations();
     });
 
     triggerReset(false);

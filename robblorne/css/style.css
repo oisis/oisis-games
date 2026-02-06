@@ -77,7 +77,6 @@ canvas {
     max-width: 100%;
 }
 
-/* --- NOWY UKŁAD PASKA INFORMACYJNEGO --- */
 .game-info { 
     display: flex; 
     justify-content: space-between; 
