@@ -15,8 +15,11 @@
         <h1 id="game-title">Robblorne</h1>
         
         <div class="game-info">
-            <div><span data-i18n="dropsLabel">KROPLE:</span> <span id="blood-val">0 / 0</span></div> <div>Życia: <span id="lives-val">3</span></div>
-            <button class="restart-btn" id="restartBtn">Restart [R]</button>
+            <div class="stats-row">
+                <div><span data-i18n="labelLives">Życia</span>: <span id="lives-val">❤️❤️❤️❤️❤️</span></div>
+                <div><span data-i18n="dropsLabel">KROPLE:</span> <span id="blood-val">0 / 0</span></div>
+            </div>
+            <button class="restart-btn" id="restartBtn" data-i18n="restartBtn">Restart Levelu [R]</button>
         </div>
         
         <div class="canvas-wrapper">
@@ -28,8 +31,7 @@
             <span data-i18n="totalBloodLabel">ZEBRANA KREW:</span> <span id="total-points">0</span>
         </div>
         
-        <div class="mobile-hint" data-i18n="mobileHint">Przesuń palcem, aby wykonać krok</div>
-        <div class="controls-hint" data-i18n="controlsHint">Strzałki: Ruch | R: Restart</div>
+        <div class="mobile-hint" data-i18n="mobileHint">Przesuń i przytrzymaj, aby biec</div>
     </div>
 
     <script src="js/lang.js"></script>

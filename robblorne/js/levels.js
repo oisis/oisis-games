@@ -62,15 +62,17 @@ const Levels = [
     {
         id: 4,
         map: [
-            "#######",
-            "#S...S#",
-            "#..B..#",
-            "#B.R.B#", // Musisz mądrze przesuwać skrzynie
-            "#..B..#",
-            "#S...S#",
-            "###E###"
+            "###########",
+            "#R.......S#",
+            "#####.###.#",
+            "#S..B.....#", // Ta skrzynia blokuje dostęp do dolnej części
+            "###.###.###",
+            "#K..B...S.#", // Musisz przepchnąć tę skrzynię, by dostać się do K
+            "###.###.###",
+            "#S....D..E#",
+            "###########"
         ],
-        enemies: [] // Brak wrogów, czysta zagadka logiczna
+        enemies: [] // Skupiamy się na logice
     },
 
     // --- POZIOM 5: Zygzak Śmierci ---

@@ -5,20 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const bloodValElem = document.getElementById('blood-val');
     const totalPointsElem = document.getElementById('total-points');
     const levelValElem = document.getElementById('level-val');
-    const livesValElem = document.getElementById('lives-val'); // Nowy element
+    const livesValElem = document.getElementById('lives-val');
 
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light-mode');
-    }
+    if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 
     const TILE_SIZE = 64;
-
-    // --- ZMIENNE STANU GRY ---
     let grid, player, bloodTotal, bloodCollected, keys, frame, isGameOver;
     
     let currentLevelIndex = parseInt(localStorage.getItem('currentLevel')) || 0; 
     let totalScore = parseInt(localStorage.getItem('totalScore')) || 0;
-    let lives = 3; // Licznik żyć
+    let lives = 5; 
     
     let enemies = [];
     let enemyUpdateTick = 0;
@@ -26,8 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDirection = { dx: 0, dy: 0 };
 
     function safeGetText(key) {
-        if (typeof getText === 'function') return getText(key);
-        return key === 'msgGameOver' ? "KONIEC GRY" : ""; 
+        return (typeof getText === 'function') ? getText(key) : key;
     }
 
     function resizeCanvas() {
@@ -43,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fullReset) {
             currentLevelIndex = 0;
             totalScore = 0;
-            lives = 3; // Reset żyć przy nowej grze
+            lives = 5;
             localStorage.setItem('totalScore', 0);
             localStorage.setItem('currentLevel', 0);
         }
@@ -53,10 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         grid = levelData.map.map(row => row.split(''));
         enemies = JSON.parse(JSON.stringify(levelData.enemies));
-        bloodCollected = 0; 
-        keys = 0; 
-        frame = 0;
-        
+        bloodCollected = 0; keys = 0; frame = 0;
         bloodTotal = 0;
         grid.forEach(row => row.forEach(cell => { if(cell === 'S') bloodTotal++; }));
         
@@ -76,121 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if(bloodValElem) bloodValElem.innerText = `${bloodCollected} / ${bloodTotal}`;
         if(totalPointsElem) totalPointsElem.innerText = totalScore;
         if(levelValElem) levelValElem.innerText = currentLevelIndex + 1;
-        if(livesValElem) livesValElem.innerText = "❤️".repeat(lives); // Wyświetlanie serduszek
+        if(livesValElem) livesValElem.innerText = "❤️".repeat(lives);
         
         localStorage.setItem('totalScore', totalScore);
         localStorage.setItem('currentLevel', currentLevelIndex);
     }
 
-    // --- LOGIKA ŚMIERCI I ŻYĆ ---
-    function die() { 
-        if (isGameOver) return;
-        
-        lives--;
-        stopContinuousMove();
-        updateUI();
-
-        if (lives <= 0) {
-            handleGameOver();
-        } else {
-            titleElem.innerText = "STRACONO ŻYCIE!";
-            titleElem.style.color = "orange";
-            isGameOver = true;
-            setTimeout(() => {
-                triggerReset(false); // Restart tego samego poziomu
-            }, 1000);
-        }
-    }
-
-    function handleGameOver() {
-        isGameOver = true;
-        titleElem.innerText = safeGetText('msgGameOver');
-        titleElem.style.color = "red";
-        
-        // Całkowity reset gry po 2 sekundach
-        setTimeout(() => {
-            triggerReset(true); 
-        }, 2000);
-    }
-
-    // --- RESZTA LOGIKI (RUCH I AKTUALIZACJA) ---
-    function movePlayer(dx, dy) {
-        if (isGameOver) return;
-        const nx = player.x + dx, ny = player.y + dy;
-        if (!grid[ny] || !grid[ny][nx]) return; 
-
-        // Kolizja z wrogiem
-        if (enemies.some(en => en.x === nx && en.y === ny)) {
-            die();
-            return;
-        }
-        
-        const target = grid[ny][nx];
-        if (target === '.' || target === 'S' || target === 'K') {
-            if (target === 'S') { 
-                bloodCollected++; 
-                totalScore++; 
-            }
-            if (target === 'K') keys++;
-            grid[player.y][player.x] = '.'; 
-            grid[ny][nx] = 'R';
-            player.x = nx; player.y = ny;
-        } else if (target === 'B') {
-            const bx = nx + dx, by = ny + dy;
-            if (grid[by] && grid[by][bx] === '.' && !enemies.some(en => en.x === bx && en.y === by)) {
-                grid[by][bx] = 'B'; 
-                grid[player.y][player.x] = '.'; 
-                grid[ny][nx] = 'R';
-                player.x = nx; player.y = ny;
-            }
-        } else if (target === 'D' && keys > 0) { 
-            keys--; 
-            grid[player.y][player.x] = '.'; 
-            grid[ny][nx] = 'R';
-            player.x = nx; player.y = ny;
-        } else if (target === 'E' && bloodCollected >= bloodTotal) {
-            levelComplete();
-        }
-    }
-
-    function levelComplete() {
-        if (currentLevelIndex + 1 < Levels.length) {
-            currentLevelIndex++;
-            triggerReset(false);
-        } else {
-            winGame();
-        }
-    }
-
-    function winGame() { 
-        isGameOver = true; 
-        stopContinuousMove();
-        titleElem.innerText = safeGetText('msgWin'); 
-        titleElem.style.color = "#c5a059"; 
-        setTimeout(() => triggerReset(true), 3000); 
-    }
-
-    function updateEnemies() {
-        if (isGameOver) return;
-        enemyUpdateTick++;
-        if (enemyUpdateTick % 20 === 0) {
-            enemies.forEach(en => {
-                let nextX = en.x + en.dir;
-                if (nextX < 0 || nextX >= grid[0].length) { en.dir *= -1; return; }
-                let target = grid[en.y][nextX];
-                if (target === '#' || target === 'B' || target === 'D' || target === 'E' || target === 'K') {
-                    en.dir *= -1; 
-                    nextX = en.x + en.dir;
-                }
-                if (grid[en.y][nextX] !== '#' && grid[en.y][nextX] !== 'B') en.x = nextX;
-                
-                // Sprawdzenie czy pająk wszedł na gracza
-                if (en.x === player.x && en.y === player.y) die();
-            });
-        }
-    }
-
-    // Funkcje rysujące (drawTile, drawHunter, update) pozostają bez zmian względem poprzedniego kodu...
     function drawHunter(px, py) {
         ctx.save();
         ctx.fillStyle = "#1a1a22";
@@ -205,18 +88,67 @@ document.addEventListener('DOMContentLoaded', () => {
         const px = x * TILE_SIZE; const py = y * TILE_SIZE;
         const isLight = document.body.classList.contains('light-mode');
         ctx.fillStyle = isLight ? "#e0e0e0" : "#0c0d11"; ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+        ctx.strokeStyle = isLight ? "#ccc" : "#1a1a1a"; ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
         if (type === '#') {
             ctx.fillStyle = isLight ? "#bbb" : "#1a1e26"; ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
         } else if (type === 'R') { drawHunter(px, py); }
-        else if (type === 'S') {
-            ctx.font = `32px serif`; ctx.fillText("🩸", px + 15, py + 45);
-        } else if (type === 'B') {
-            ctx.fillStyle = "#2a1515"; ctx.fillRect(px + 10, py + 8, TILE_SIZE - 20, TILE_SIZE - 16);
-        } else if (type === 'K') { ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45); }
-        else if (type === 'D') {
-            ctx.fillStyle = "#3a0000"; ctx.fillRect(px + 10, py + 10, 44, TILE_SIZE - 20);
-        } else if (type === 'E' && bloodCollected >= bloodTotal) {
-            ctx.font = "45px serif"; ctx.fillText("⛪", px + 10, py + 50);
+        else if (type === 'S') { ctx.font = "32px serif"; ctx.fillText("🩸", px + 15, py + 45); }
+        else if (type === 'B') { ctx.fillStyle = "#2a1515"; ctx.fillRect(px + 10, py + 8, TILE_SIZE - 20, TILE_SIZE - 16); }
+        else if (type === 'K') { ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45); }
+        else if (type === 'D') { ctx.fillStyle = "#3a0000"; ctx.fillRect(px + 10, py + 10, 44, TILE_SIZE - 20); }
+        else if (type === 'E' && bloodCollected >= bloodTotal) { ctx.font = "45px serif"; ctx.fillText("⛪", px + 10, py + 50); }
+    }
+
+    function updateEnemies() {
+        if (isGameOver) return;
+        enemyUpdateTick++;
+        if (enemyUpdateTick % 20 === 0) {
+            enemies.forEach(en => {
+                let nextX = en.x + en.dir;
+                if (nextX < 0 || nextX >= grid[0].length) { en.dir *= -1; return; }
+                let target = grid[en.y][nextX];
+                if (target === '#' || target === 'B' || target === 'D' || target === 'E' || target === 'K') { en.dir *= -1; nextX = en.x + en.dir; }
+                if (grid[en.y][nextX] !== '#' && grid[en.y][nextX] !== 'B') en.x = nextX;
+                if (en.x === player.x && en.y === player.y) die();
+            });
+        }
+    }
+
+    // GŁÓWNA FUNKCJA ŚMIERCI
+    function die() { 
+        if (isGameOver) return;
+        lives--;
+        stopContinuousMove();
+        updateUI();
+        if (lives <= 0) {
+            isGameOver = true;
+            titleElem.innerText = safeGetText('msgGameOver');
+            titleElem.style.color = "red";
+            setTimeout(() => triggerReset(true), 2000);
+        } else {
+            isGameOver = true;
+            titleElem.innerText = safeGetText('msgDeath');
+            titleElem.style.color = "orange";
+            setTimeout(() => triggerReset(false), 1200);
+        }
+    }
+
+    // FUNKCJA RESTARTU POZIOMU KOSZTEM ŻYCIA
+    function manualRestart() {
+        if (isGameOver) return;
+        die(); // Po prostu wywołujemy śmierć - odejmie życie i zresetuje mapę
+    }
+    
+    function levelComplete() {
+        if (currentLevelIndex + 1 < Levels.length) {
+            currentLevelIndex++;
+            triggerReset(false);
+        } else {
+            isGameOver = true;
+            stopContinuousMove();
+            titleElem.innerText = safeGetText('msgWin');
+            titleElem.style.color = "#c5a059";
+            setTimeout(() => triggerReset(true), 3000);
         }
     }
 
@@ -229,13 +161,33 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI(); frame++; requestAnimationFrame(update);
     }
 
-    // --- STEROWANIE ---
+    function movePlayer(dx, dy) {
+        if (isGameOver) return;
+        const nx = player.x + dx, ny = player.y + dy;
+        if (!grid[ny] || !grid[ny][nx]) return; 
+        if (enemies.some(en => en.x === nx && en.y === ny)) { die(); return; }
+        const target = grid[ny][nx];
+        if (target === '.' || target === 'S' || target === 'K') {
+            if (target === 'S') { bloodCollected++; totalScore++; }
+            if (target === 'K') keys++;
+            grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
+            player.x = nx; player.y = ny;
+        } else if (target === 'B') {
+            const bx = nx + dx, by = ny + dy;
+            if (grid[by] && grid[by][bx] === '.' && !enemies.some(en => en.x === bx && en.y === by)) {
+                grid[by][bx] = 'B'; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
+                player.x = nx; player.y = ny;
+            }
+        } else if (target === 'D' && keys > 0) { keys--; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R'; player.x = nx; player.y = ny; }
+        else if (target === 'E' && bloodCollected >= bloodTotal) levelComplete();
+    }
+
     function startContinuousMove(dx, dy) {
         if (lastDirection.dx === dx && lastDirection.dy === dy) return;
         stopContinuousMove();
         lastDirection = { dx, dy };
         movePlayer(dx, dy);
-        moveInterval = setInterval(() => movePlayer(dx, dy), 200);
+        moveInterval = setInterval(() => movePlayer(dx, dy), 180);
     }
 
     function stopContinuousMove() {
@@ -244,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.onkeydown = (e) => {
+        if (e.key.toLowerCase() === 'r') { manualRestart(); return; } // Zmiana tutaj
         if (e.repeat) return; 
         if (e.key === "ArrowUp") movePlayer(0, -1);
         if (e.key === "ArrowDown") movePlayer(0, 1);
@@ -251,12 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === "ArrowRight") movePlayer(1, 0);
     };
 
-    // Obsługa dotyku (Swipe)
-    let touchStartX = 0; let touchStartY = 0;
+    let touchStartX = 0, touchStartY = 0;
     document.body.addEventListener('touchstart', (e) => {
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
         touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
     });
     document.body.addEventListener('touchmove', (e) => {
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
         e.preventDefault();
         let diffX = e.touches[0].clientX - touchStartX;
         let diffY = e.touches[0].clientY - touchStartY;
@@ -266,6 +220,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, {passive: false});
     document.body.addEventListener('touchend', stopContinuousMove);
+
+    const restartBtn = document.getElementById('restartBtn');
+    if(restartBtn) restartBtn.addEventListener('click', manualRestart); // Zmiana tutaj
+
+    const themeBtn = document.querySelector('.theme-switch');
+    if (themeBtn) themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        applyTranslations();
+    });
 
     triggerReset(false);
     update();
