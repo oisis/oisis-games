@@ -13,7 +13,8 @@ body {
     background-size: cover;
     background-attachment: fixed;
     overflow: hidden;
-    touch-action: none;
+    /* Kluczowe dla gestów: zapobiega domyślnym reakcjom przeglądarki na dotyk */
+    touch-action: none; 
 }
 h1 {
     color: #8a0f0f;
@@ -83,7 +84,7 @@ canvas {
     box-shadow: 0 0 10px #8a0f0f;
 }
 
-/* --- PRZYCISK ZMIANY MOTYWU (ODWRÓCONY - JAK W SNAKE) --- */
+/* --- PRZYCISK ZMIANY MOTYWU (ODWRÓCONY) --- */
 .theme-switch {
     position: absolute;
     top: 20px;
@@ -97,8 +98,6 @@ canvas {
     transition: all 0.3s;
     font-weight: bold;
     text-align: center;
-
-    /* Domyślnie (Ciemny motyw) -> Przycisk jest JASNY */
     background-color: #e0e0e0;
     color: #1a1a1a;
     border: 1px solid #ccc;
@@ -138,7 +137,6 @@ body.light-mode .back-button:hover {
     box-shadow: 0 0 5px rgba(204, 0, 0, 0.3);
 }
 
-/* Light Mode: Przycisk Motywu staje się CIEMNY */
 body.light-mode .theme-switch {
     background-color: #1a1a1a;
     color: #e0e0e0;
@@ -199,39 +197,19 @@ body.light-mode .scoreboard li {
     color: #555;
 }
 
-/* --- MOBILE CONTROLS (TETRIS SPECIFIC) --- */
-.mobile-controls {
+/* --- MOBILE SPECIFIC --- */
+.mobile-hint {
     display: none;
-    margin-top: 20px;
-    text-align: center;
-    width: 100%;
-}
-
-.mobile-controls button {
-    font-size: 24px;
-    width: 60px;
-    height: 60px;
-    margin: 5px;
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #777;
+    font-style: italic;
     border: 1px solid #333;
-    background-color: rgba(0,0,0,0.5);
-    color: #b0b0b0;
-    cursor: pointer;
-    border-radius: 10px;
-    touch-action: manipulation;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 5px;
 }
 
-.center-btns {
-    display: flex;
-    flex-direction: column;
-}
-
-body.light-mode .mobile-controls button {
-    border-color: #bbb;
-    background-color: rgba(255,255,255,0.5);
-    color: #555;
-}
-
-/* --- MOBILE --- */
 @media (max-width: 768px) {
     .container {
         padding-top: 70px; 
@@ -256,11 +234,8 @@ body.light-mode .mobile-controls button {
         display: none;
     }
     
-    .mobile-controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
+    .mobile-hint {
+        display: block; /* Pokaż podpowiedź na mobile */
     }
 
     .back-button {

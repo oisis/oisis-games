@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ctx = canvas.getContext('2d');
 
-    // Motyw na starcie
     if (localStorage.getItem('theme') === 'light') {
         document.body.classList.add('light-mode');
     }
@@ -15,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ROW = 20;
     const COL = 10;
     let SQ = 20;
-    let VACANT = "#080808"; // Domyślny ciemny, zmieni się przy rysowaniu
+    let VACANT = "#080808"; 
     let score = 0;
     let gameOver = false;
 
@@ -29,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resizeGame() {
         const isMobile = window.innerWidth <= 768;
-        // Na mobile: 65% wysokości ekranu, na desktopie 60%
         let factor = isMobile ? 0.65 : 0.6;
         let availableHeight = window.innerHeight * factor;
         
@@ -39,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawBoard();
     }
 
-    // Shapes
+    // --- TETROMINOES ---
     const PIECES = [
         [Z, "#a93226"],
         [S, "#1e8449"],
@@ -58,12 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function T() { return [[0,1,0],[1,1,1],[0,0,0]]; }
     function Z() { return [[1,1,0],[0,1,1],[0,0,0]]; }
 
-    // Board Init
     let board = [];
     for(let r = 0; r < ROW; r++){
         board[r] = [];
         for(let c = 0; c < COL; c++){
-            board[r][c] = "VACANT"; // Używamy znacznika tekstowego, nie koloru
+            board[r][c] = "VACANT"; 
         }
     }
 
@@ -76,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawBoard(){
         const isLight = document.body.classList.contains('light-mode');
-        // Aktualizujemy kolor tła w zależności od motywu
         let currentVacantColor = isLight ? "#f0f0f0" : "#080808";
         
         for(let r = 0; r < ROW; r++){
@@ -183,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Remove full rows
         for(let r = 0; r < ROW; r++){
             let isRowFull = true;
             for(let c = 0; c < COL; c++){
@@ -202,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     board[0][c] = "VACANT";
                 }
                 score += 10;
-                // Speed up
                 let level = Math.floor(score / 50);
                 dropInterval = Math.max(100, 1000 - (level * 50));
                 scoreElement.innerText = safeGetText('scorePrefix') + score;
@@ -287,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- STEROWANIE ---
+    // --- STEROWANIE KLAWIATURĄ ---
     document.addEventListener("keydown", (event) => {
         if(gameOver) return;
         if(event.keyCode == 37){ p.moveLeft(); dropStart = Date.now(); }
@@ -296,57 +290,65 @@ document.addEventListener('DOMContentLoaded', () => {
         else if(event.keyCode == 40){ p.moveDown(); }
     });
 
-    // Mobilne
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
-    const rotateBtn = document.getElementById('rotate-btn');
-    const downBtn = document.getElementById('down-btn');
+    // --- NOWE STEROWANIE GESTAMI (TOUCH) ---
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastMoveX = 0;
+    let lastMoveY = 0;
+    let touchStartTime = 0;
+    const SWIPE_THRESHOLD = 30; // Min przesunięcie dla ruchu
+    const TAP_THRESHOLD = 10;   // Max przesunięcie dla tapnięcia
 
-    if(leftBtn) {
-        const handleTouch = (action, e) => {
-            if(e) e.preventDefault();
-            if(!gameOver) {
-                action();
-                dropStart = Date.now();
-            }
-        };
+    // Nasłuchujemy na body, żeby łapać gesty na całym ekranie
+    const touchArea = document.body;
 
-        leftBtn.addEventListener('touchstart', (e) => handleTouch(() => p.moveLeft(), e));
-        rightBtn.addEventListener('touchstart', (e) => handleTouch(() => p.moveRight(), e));
-        rotateBtn.addEventListener('touchstart', (e) => handleTouch(() => p.rotate(), e));
-        downBtn.addEventListener('touchstart', (e) => handleTouch(() => p.moveDown(), e));
+    touchArea.addEventListener('touchstart', (e) => {
+        // Ignoruj dotyk na przyciskach interfejsu
+        if (e.target.closest('a') || e.target.closest('.theme-switch')) return;
         
-        // Obsługa kliknięć (dla hybrydowych/desktop testów)
-        leftBtn.addEventListener('click', () => handleTouch(() => p.moveLeft()));
-        rightBtn.addEventListener('click', () => handleTouch(() => p.moveRight()));
-        rotateBtn.addEventListener('click', () => handleTouch(() => p.rotate()));
-        downBtn.addEventListener('click', () => handleTouch(() => p.moveDown()));
-    }
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        lastMoveX = touchStartX;
+        lastMoveY = touchStartY;
+        touchStartTime = Date.now();
+        
+        // e.preventDefault(); // Opcjonalnie: odkomentuj jeśli strona skacze
+    }, {passive: false});
 
-    // --- MOTYW ---
-    function toggleTheme() {
-        document.body.classList.toggle('light-mode');
-        const isLight = document.body.classList.contains('light-mode');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    touchArea.addEventListener('touchmove', (e) => {
+        if(gameOver) return;
+        if (e.target.closest('a') || e.target.closest('.theme-switch')) return;
         
-        // Odśwież planszę i napisy
-        drawBoard(); 
-        if(!gameOver) p.draw();
-        
-        if (typeof applyTranslations === 'function') {
-            applyTranslations();
+        e.preventDefault(); // Blokada scrollowania strony
+
+        let currentX = e.touches[0].clientX;
+        let currentY = e.touches[0].clientY;
+        let diffX = currentX - lastMoveX;
+        let diffY = currentY - lastMoveY;
+
+        // Ruch Lewo/Prawo
+        if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+            if (diffX > 0) p.moveRight();
+            else p.moveLeft();
+            
+            lastMoveX = currentX; 
+            dropStart = Date.now(); 
         }
-    }
 
-    const themeBtn = document.querySelector('.theme-switch');
-    if (themeBtn) {
-        themeBtn.addEventListener('click', toggleTheme);
-    }
+        // Ruch w Dół (szybsze opadanie)
+        if (diffY > SWIPE_THRESHOLD) {
+            p.moveDown();
+            lastMoveY = currentY;
+        }
+    }, {passive: false});
 
-    // --- START ---
-    window.addEventListener('resize', resizeGame);
-    resizeGame();
-    updateScoreboard();
-    scoreElement.innerText = safeGetText('scorePrefix') + score;
-    drop();
-});
+    touchArea.addEventListener('touchend', (e) => {
+        if(gameOver) return;
+        if (e.target.closest('a') || e.target.closest('.theme-switch')) return;
+
+        let touchEndTime = Date.now();
+        let touchDuration = touchEndTime - touchStartTime;
+        let endX = e.changedTouches[0].clientX;
+        let endY = e.changedTouches[0].clientY;
+        let totalDiffX = Math.abs(endX - touchStartX);
+        let totalDiffY = Math.

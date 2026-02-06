@@ -7,6 +7,7 @@ const Translations = {
         mainTitle: "Tetris",
         scorePrefix: "Echa Krwi: ",
         controlsHint: "Strzałki: Ruch / Góra: Obrót",
+        mobileHint: "Tap: Obrót | Przesuń: Ruch", // Nowy tekst
         scoreboardTitle: "Tablica Wyników",
         gameOverMsg: "Koniec warty! Twój wynik: ",
         enterNick: "Podaj swój nick:",
@@ -20,6 +21,7 @@ const Translations = {
         mainTitle: "Tetris",
         scorePrefix: "Echoes of Blood: ",
         controlsHint: "Arrows: Move / Up: Rotate",
+        mobileHint: "Tap: Rotate | Swipe: Move", // Nowy tekst
         scoreboardTitle: "Scoreboard",
         gameOverMsg: "Watch ended! Your score: ",
         enterNick: "Enter your name:",
@@ -39,13 +41,12 @@ function applyTranslations() {
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (key === 'themeSwitch') return; // Obsługa dynamiczna
+        if (key === 'themeSwitch') return; 
         if (Translations[currentLang][key]) {
             el.innerText = getText(key);
         }
     });
 
-    // Dynamiczna zmiana przycisku motywu
     const themeBtn = document.querySelector('.theme-switch');
     if (themeBtn) {
         const isLight = document.body.classList.contains('light-mode');
