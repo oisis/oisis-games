@@ -40,7 +40,7 @@ h1 {
     color: #8a0f0f;
     text-transform: uppercase;
     letter-spacing: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-shadow: 0px 0px 10px rgba(138, 15, 15, 0.4);
     font-size: 2rem;
 }
@@ -77,19 +77,42 @@ canvas {
     max-width: 100%;
 }
 
+/* --- NOWY UKŁAD PASKA INFORMACYJNEGO --- */
 .game-info { 
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    width: 100%; margin-bottom: 10px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%; 
+    margin-bottom: 20px; 
+    gap: 15px;
 }
 
-.stats-row {
-    display: flex; justify-content: space-between; width: 100%; font-size: 1rem;
+.stats-left, .stats-right {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: bold;
+    white-space: nowrap;
 }
+
+.stats-left { text-align: left; }
+.stats-right { text-align: right; }
 
 .restart-btn { 
-    background: #3a0a0a; color: #fff; border: 1px solid #8a0f0f; 
-    padding: 8px 20px; cursor: pointer; font-family: 'Cinzel', serif; 
-    text-transform: uppercase; width: 100%;
+    background: #3a0a0a; 
+    color: #fff; 
+    border: 1px solid #8a0f0f; 
+    padding: 8px 15px; 
+    cursor: pointer; 
+    font-family: 'Cinzel', serif; 
+    text-transform: uppercase; 
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    flex: 0 1 auto;
+}
+
+.restart-btn:hover {
+    background: #5e0b0b;
+    box-shadow: 0 0 10px #8a0f0f;
 }
 
 #blood-val, #total-points, #lives-val { color: #8a0f0f; font-weight: bold; }
@@ -104,6 +127,9 @@ canvas {
 
 @media (max-width: 768px) {
     .container { padding-top: 60px; padding-left: 10px; padding-right: 10px; }
+    .game-info { flex-wrap: wrap; justify-content: center; }
+    .stats-left, .stats-right { flex: 0 0 45%; font-size: 0.8rem; }
+    .restart-btn { order: 3; width: 100%; margin-top: 10px; }
     .mobile-hint { display: block; }
     .back-button { top: 15px; left: 15px; }
     .theme-switch { top: 15px; right: 15px; }

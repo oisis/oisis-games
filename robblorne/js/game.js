@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let enemyUpdateTick = 0;
     let moveInterval = null;
     let lastDirection = { dx: 0, dy: 0 };
-    let activeKey = null; // Śledzenie aktualnie wciśniętego klawisza
+    let activeKey = null;
 
     function safeGetText(key) {
         return (typeof getText === 'function') ? getText(key) : key;
@@ -183,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (target === 'E' && bloodCollected >= bloodTotal) levelComplete();
     }
 
-    // PŁYNNY RUCH (Używany przez klawiaturę i dotyk)
     function startContinuousMove(dx, dy) {
         if (lastDirection.dx === dx && lastDirection.dy === dy) return;
         stopContinuousMove();
@@ -197,11 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDirection = { dx: 0, dy: 0 };
     }
 
-    // STEROWANIE KLAWIATURĄ (Z POPRAWIONYM RUCHEM CIĄGŁYM)
     window.onkeydown = (e) => {
         if (isGameOver) return;
         if (e.key.toLowerCase() === 'r') { manualRestart(); return; }
-        if (e.repeat) return; // Ważne: ignorujemy systemowe powtarzanie, bo mamy własny Interwał
+        if (e.repeat) return; 
 
         activeKey = e.key;
         if (e.key === "ArrowUp") startContinuousMove(0, -1);
@@ -217,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // STEROWANIE DOTYKOWE
     let touchStartX = 0, touchStartY = 0;
     document.body.addEventListener('touchstart', (e) => {
         if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
@@ -242,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeBtn) themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('light-mode');
         localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-        if (typeof applyTranslations === 'function') applyTranslations();
+        applyTranslations();
     });
 
     triggerReset(false);
