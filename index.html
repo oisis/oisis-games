@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunter's Dream - Spis Gier</title>
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+    <style>
+        body {
+            background-color: #050505;
+            color: #b0b0b0;
+            font-family: 'Times New Roman', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: url('images/background_dark.png');
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .container {
+            border: 1px solid #333;
+            padding: 50px;
+            width: 100%;
+            max-width: 60%;
+            background-color: rgba(8, 8, 8, 0.9);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
+            text-align: center;
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        /* Ozdobna ramka wewnętrzna */
+        .container::after {
+            content: "";
+            position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 1px solid #5e0b0b;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        h1 {
+            color: #8a0f0f;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 2.2em;
+            margin-bottom: 40px;
+            text-shadow: 0px 0px 15px rgba(138, 15, 15, 0.4);
+            border-bottom: 1px solid #222;
+            padding-bottom: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin: 20px 0;
+        }
+        a {
+            text-decoration: none;
+            color: #999;
+            font-size: 1.3em;
+            letter-spacing: 1px;
+            transition: all 0.4s ease;
+            display: block;
+            padding: 10px;
+        }
+        a:hover {
+            color: #ff3333;
+            text-shadow: 0 0 8px #8a0f0f;
+            background: linear-gradient(90deg, transparent, #1a0505, transparent);
+            transform: scale(1.05);
+        }
+        .footer {
+            margin-top: 50px;
+            font-size: 0.7em;
+            color: #444;
+            font-style: italic;
+        }
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+        .lang-switch a, .lang-switch span {
+            display: inline;
+            padding: 0 5px;
+            font-size: 1rem;
+            letter-spacing: 0;
+        }
+        .lang-switch a:hover {
+            transform: none;
+            background: none;
+            text-shadow: 0 0 5px #ff3333;
+        }
+        .theme-switch {
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #777;
+            text-decoration: underline;
+        }
+        .theme-switch:hover {
+            color: #b0b0b0;
+        }
+
+        /* Light Mode Styles */
+        body.light-mode {
+            background-color: #e0e0e0;
+            color: #1a1a1a;
+            background-image: url('images/background_light.png');
+        }
+        body.light-mode .container {
+            background-color: rgba(240, 240, 240, 0.9);
+            border-color: #bbb;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+        }
+        body.light-mode .container::after {
+            border-color: #8a0f0f;
+            opacity: 0.3;
+        }
+        body.light-mode h1 {
+            text-shadow: 0px 0px 5px rgba(138, 15, 15, 0.2);
+            border-bottom: 1px solid #ccc;
+        }
+        body.light-mode a {
+            color: #333;
+        }
+        body.light-mode a:hover {
+            color: #cc0000;
+            background: linear-gradient(90deg, transparent, #e6e6e6, transparent);
+            text-shadow: 0 0 5px rgba(204, 0, 0, 0.3);
+        }
+        body.light-mode .footer {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <span style="color: #8a0f0f; font-weight: bold;">PL</span> | <a href="index_en.html">EN</a>
+            <div class="theme-switch" onclick="toggleTheme()">Zmień motyw</div>
+        </div>
+        <h1>Dostępne Gry</h1>
+        <ul>
+            <li><a href="snake/snake.html">Snake</a></li>
+            <li><a href="tetris/tetris.html">Tetris</a></li>
+        </ul>
+        <div class="footer">
+            "We are born of the blood, made men by the blood, undone by the blood."
+        </div>
+    </div>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - The Old Hunter</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <style>
+        body {
+            background-color: #050505;
+            color: #b0b0b0;
+            font-family: 'Times New Roman', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('../images/background_dark.png');
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        h1 {
+            color: #8a0f0f;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0px 0px 10px rgba(138, 15, 15, 0.4);
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 1px solid #333;
+            background-color: #080808;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
+            display: block;
+        }
+        #score {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #999;
+        }
+        .controls {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #444;
+            font-style: italic;
+        }
+        .container {
+            border: 1px solid #333;
+            padding: 50px;
+            background-color: rgba(8, 8, 8, 0.9);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container::after {
+            content: "";
+            position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 1px solid #5e0b0b;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            color: #999;
+            text-decoration: none;
+            border: 1px solid #333;
+            background-color: transparent;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        .back-button:hover {
+            color: #ff3333;
+            border-color: #8a0f0f;
+            box-shadow: 0 0 10px #8a0f0f;
+        }
+        .theme-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #777;
+            text-decoration: underline;
+            z-index: 10;
+        }
+        .theme-switch:hover {
+            color: #b0b0b0;
+        }
+        body.light-mode {
+            background-image: url('../images/background_light.png');
+        }
+        body.light-mode .container {
+            background-color: rgba(240, 240, 240, 0.9);
+            border-color: #bbb;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+        }
+        body.light-mode .container::after {
+            border-color: #8a0f0f;
+            opacity: 0.3;
+        }
+        body.light-mode h1 {
+            text-shadow: 0px 0px 5px rgba(138, 15, 15, 0.2);
+        }
+        body.light-mode .back-button {
+            color: #555;
+            border-color: #bbb;
+        }
+        body.light-mode .back-button:hover {
+            color: #cc0000;
+            border-color: #cc0000;
+            box-shadow: 0 0 5px rgba(204, 0, 0, 0.3);
+        }
+        .game-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .scoreboard {
+            border: 1px solid #333;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            min-width: 200px;
+            text-align: left;
+        }
+        .scoreboard h3 {
+            color: #8a0f0f;
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .scoreboard ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .scoreboard li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.9em;
+            color: #999;
+        }
+        body.light-mode .scoreboard {
+            background-color: rgba(255, 255, 255, 0.5);
+            border-color: #bbb;
+        }
+        body.light-mode .scoreboard h3 {
+            border-bottom-color: #ccc;
+        }
+        body.light-mode .scoreboard li {
+            border-bottom-color: #ddd;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index_en.html" class="back-button">Back</a>
+        <div class="theme-switch" onclick="toggleTheme()">Toggle Theme</div>
+        <h1>Snake</h1>
+        <div class="game-wrapper">
+            <div class="game-area">
+                <canvas id="gameCanvas"></canvas>
+                <div id="score">Echoes of Blood: 0</div>
+                <div class="controls">Use arrow keys to hunt</div>
+            </div>
+            <div class="scoreboard">
+                <h3>High Scores</h3>
+                <ul id="scoreList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const headImage = new Image();
+        headImage.src = '../images/snake_head.svg';
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        const gridSize = 20;
+        let tileCountX = 20;
+        let tileCountY = 20;
+
+        function resizeGame() {
+            // Square board: 72% of the smaller screen dimension (increased by 20%)
+            let size = Math.min(window.innerWidth, window.innerHeight) * 0.72;
+            size = Math.floor(size / gridSize) * gridSize;
+            canvas.width = size;
+            canvas.height = size;
+            tileCountX = canvas.width / gridSize;
+            tileCountY = canvas.height / gridSize;
+        }
+
+        window.addEventListener('resize', resizeGame);
+        resizeGame();
+
+        let playerX = 10;
+        let playerY = 10;
+        let velocityX = 0;
+        let velocityY = 0;
+
+        let trail = [];
+        let tailLength = 5;
+
+        let foodX = Math.floor(Math.random() * tileCountX);
+        let foodY = Math.floor(Math.random() * tileCountY);
+        let score = 0;
+
+        function game() {
+            playerX += velocityX;
+            playerY += velocityY;
+
+            if (playerX < 0) playerX = tileCountX - 1;
+            if (playerX >= tileCountX) playerX = 0;
+            if (playerY < 0) playerY = tileCountY - 1;
+            if (playerY >= tileCountY) playerY = 0;
+
+            // Background and Grid
+            const isLight = document.body.classList.contains('light-mode');
+            ctx.fillStyle = isLight ? '#f0f0f0' : '#080808';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = isLight ? '#d0d0d0' : '#1a1a1a';
+            ctx.beginPath();
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+            }
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = '#8a8a8a'; // Snake color
+            for (let i = 0; i < trail.length; i++) {
+                ctx.fillRect(trail[i].x * gridSize, trail[i].y * gridSize, gridSize - 2, gridSize - 2);
+                if (trail[i].x === playerX && trail[i].y === playerY && (velocityX !== 0 || velocityY !== 0)) {
+                    handleGameOver();
+                }
+            }
+
+            // Draw Head (Graphic)
+            ctx.save();
+            ctx.translate(playerX * gridSize + gridSize / 2, playerY * gridSize + gridSize / 2);
+            let angle = 0;
+            if (velocityX === 1) angle = Math.PI / 2;
+            else if (velocityX === -1) angle = -Math.PI / 2;
+            else if (velocityY === 1) angle = Math.PI;
+            ctx.rotate(angle);
+            ctx.drawImage(headImage, -gridSize / 2, -gridSize / 2, gridSize, gridSize);
+            ctx.restore();
+
+            trail.push({x: playerX, y: playerY});
+            while (trail.length > tailLength) {
+                trail.shift();
+            }
+
+            if (foodX === playerX && foodY === playerY) {
+                tailLength++;
+                score += 100;
+                document.getElementById('score').innerText = 'Echoes of Blood: ' + score;
+                foodX = Math.floor(Math.random() * tileCountX);
+                foodY = Math.floor(Math.random() * tileCountY);
+            }
+
+            ctx.fillStyle = '#8a0f0f'; // Food color (blood)
+            ctx.fillRect(foodX * gridSize, foodY * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function keyPush(evt) {
+            switch(evt.keyCode) {
+                case 37: if (velocityX !== 1) { velocityX = -1; velocityY = 0; } break;
+                case 38: if (velocityY !== 1) { velocityX = 0; velocityY = -1; } break;
+                case 39: if (velocityX !== -1) { velocityX = 1; velocityY = 0; } break;
+                case 40: if (velocityY !== -1) { velocityX = 0; velocityY = 1; } break;
+            }
+        }
+
+        document.addEventListener('keydown', keyPush);
+        setInterval(game, 1000 / 15);
+
+        function handleGameOver() {
+            if (score > 0) {
+                let name = prompt("Hunt Ended! Your score: " + score + ". Enter your nickname:", "Hunter");
+                while (name !== null && name.trim().length === 0) {
+                    name = prompt("Nickname cannot be empty! Enter your nickname:", "Hunter");
+                }
+                if (name) {
+                    saveHighScore(score, name.trim());
+                    updateScoreboard();
+                }
+            }
+            tailLength = 5;
+            score = 0;
+            document.getElementById('score').innerText = 'Echoes of Blood: ' + score;
+        }
+
+        function saveHighScore(score, name) {
+            let scores = JSON.parse(localStorage.getItem('snakeHighScores')) || [];
+            scores.push({ score: score, name: name, date: new Date().toLocaleDateString() });
+            scores.sort((a, b) => b.score - a.score);
+            scores = scores.slice(0, 10);
+            localStorage.setItem('snakeHighScores', JSON.stringify(scores));
+        }
+
+        function updateScoreboard() {
+            const scores = JSON.parse(localStorage.getItem('snakeHighScores')) || [];
+            const list = document.getElementById('scoreList');
+            list.innerHTML = scores.map(s => `<li><span>${s.name || s.date}</span> <span>${s.score}</span></li>`).join('');
+        }
+
+        // Init scoreboard
+        updateScoreboard();
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+    </script>
+</body>
+</html>
