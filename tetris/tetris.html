@@ -2,585 +2,228 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris - The Old Builder</title>
-    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <title>Robblorne</title>
     <style>
-        body {
-            background-color: #050505;
-            color: #b0b0b0;
-            font-family: 'Times New Roman', serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-image: url('../images/background_dark.png');
-            background-position: center;
-            background-size: cover;
-            background-attachment: fixed;
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+        :root { --tile-size: 64px; --blood: #8a0000; --gold: #c5a059; --bg: #050505; }
+        body { background-color: var(--bg); color: var(--gold); font-family: 'Cinzel', serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding-top: 20px; overflow: hidden; }
+        
+        #game-header { 
+            width: 832px; 
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center; 
+            padding: 10px 20px; 
+            border: 1px solid #222; 
+            background: linear-gradient(to right, #000, #150000, #000); 
+            box-shadow: 0 5px 20px rgba(138, 0, 0, 0.3); 
+            margin-bottom: 20px; 
         }
-        h1 {
-            color: #8a0f0f;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 0px 0px 10px rgba(138, 15, 15, 0.4);
-            margin-bottom: 20px;
+
+        .restart-btn { justify-self: end; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 5px 15px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; }
+        .restart-btn:hover { background: var(--gold); color: black; box-shadow: 0 0 10px var(--gold); }
+        .stat { justify-self: start; font-size: 1rem; }
+        .stat b { color: #bc0000; text-shadow: 0 0 5px red; }
+        
+        #game-title { margin: 0; font-size: 1.8rem; letter-spacing: 8px; text-align: center; transition: 0.3s; }
+        
+        .msg-death { 
+            color: #fff !important; 
+            text-shadow: -1px -1px 0 #bc0000, 1px -1px 0 #bc0000, -1px 1px 0 #bc0000, 1px 1px 0 #bc0000, 0 0 15px #ff0000;
         }
-        canvas {
-            border: 1px solid #333;
-            background-color: #080808;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
-            display: block;
+        
+        .msg-win { 
+            font-size: 1.3rem !important;
+            color: #fff !important; 
+            text-shadow: -1px -1px 0 #8a0000, 1px -1px 0 #8a0000, -1px 1px 0 #8a0000, 1px 1px 0 #bc0000, 0 0 10px #ff0000;
         }
-        #score {
-            margin-top: 20px;
-            font-size: 1.2em;
-            color: #999;
-        }
-        .controls {
+
+        #canvas-container { border: 4px solid #1a1a1a; box-shadow: 0 0 100px rgba(0,0,0,1); position: relative; }
+        canvas { display: block; background: #080808; }
+
+        #score-board {
+            width: 832px;
+            text-align: right;
             margin-top: 10px;
-            font-size: 0.8em;
+            font-size: 1rem;
             color: #444;
-            font-style: italic;
+            letter-spacing: 2px;
         }
-        .container {
-            border: 1px solid #333;
-            padding: 50px;
-            background-color: rgba(8, 8, 8, 0.9);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
-            text-align: center;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .container::after {
-            content: "";
-            position: absolute;
-            top: 6px; left: 6px; right: 6px; bottom: 6px;
-            border: 1px solid #5e0b0b;
-            pointer-events: none;
-            opacity: 0.5;
-        }
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 0.9rem;
-            padding: 5px 10px;
-            color: #999;
-            text-decoration: none;
-            border: 1px solid #333;
-            background-color: transparent;
-            transition: all 0.3s;
-            z-index: 10;
-        }
-        .back-button:hover {
-            color: #ff3333;
-            border-color: #8a0f0f;
-            box-shadow: 0 0 10px #8a0f0f;
-        }
-        .theme-switch {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: #777;
-            text-decoration: underline;
-            z-index: 10;
-        }
-        .theme-switch:hover {
-            color: #b0b0b0;
-        }
-        body.light-mode {
-            background-image: url('../images/background_light.png');
-        }
-        body.light-mode .container {
-            background-color: rgba(240, 240, 240, 0.9);
-            border-color: #bbb;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
-        }
-        body.light-mode .container::after {
-            border-color: #8a0f0f;
-            opacity: 0.3;
-        }
-        body.light-mode h1 {
-            text-shadow: 0px 0px 5px rgba(138, 15, 15, 0.2);
-        }
-        body.light-mode .back-button {
-            color: #555;
-            border-color: #bbb;
-        }
-        body.light-mode .back-button:hover {
-            color: #cc0000;
-            border-color: #cc0000;
-            box-shadow: 0 0 5px rgba(204, 0, 0, 0.3);
-        }
-        .game-wrapper {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .scoreboard {
-            border: 1px solid #333;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            min-width: 200px;
-            text-align: left;
-        }
-        .scoreboard h3 {
-            color: #8a0f0f;
-            margin-top: 0;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-            font-size: 1.1em;
-        }
-        .scoreboard ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .scoreboard li {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #222;
-            font-size: 0.9em;
-            color: #999;
-        }
-        body.light-mode .scoreboard {
-            background-color: rgba(255, 255, 255, 0.5);
-            border-color: #bbb;
-        }
-        body.light-mode .scoreboard h3 {
-            border-bottom-color: #ccc;
-        }
-        body.light-mode .scoreboard li {
-            border-bottom-color: #ddd;
-            color: #555;
-        }
-
-        .mobile-controls {
-            display: none;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .mobile-controls button {
-            font-size: 24px;
-            width: 60px;
-            height: 60px;
-            margin: 5px;
-            border: 1px solid #333;
-            background-color: rgba(0,0,0,0.5);
-            color: #b0b0b0;
-            cursor: pointer;
-        }
-
-        body.light-mode .mobile-controls button {
-            border-color: #bbb;
-            background-color: rgba(255,255,255,0.5);
-            color: #555;
-        }
-
-        @media (max-width: 768px) {
-            .mobile-controls {
-                display: flex;
-                justify-content: center;
-                gap: 10px;
-            }
-            .game-wrapper {
-                flex-direction: column;
-                align-items: center;
-            }
-            .controls {
-                display: none;
-            }
-            .container {
-                padding: 10px;
-            }
-            h1 {
-                font-size: 1.5em;
-                margin-bottom: 10px;
-            }
-            .back-button, .theme-switch {
-                font-size: 0.8rem;
-                padding: 3px 8px;
-            }
-        }
+        #total-points { color: var(--blood); font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="../index.html" class="back-button">Powrót</a>
-        <div class="theme-switch" onclick="toggleTheme()">Zmień motyw</div>
-        <h1>Tetris</h1>
-        <div class="game-wrapper">
-            <div class="game-area">
-                <canvas id="gameCanvas"></canvas>
-                <div id="score">Echoes of Blood: 0</div>
-                <div class="controls">Strzałki: Ruch/Obrót</div>
-                <div class="mobile-controls">
-                    <button id="left-btn">◄</button>
-                    <button id="rotate-btn">↻</button>
-                    <button id="right-btn">►</button>
-                    <button id="down-btn">▼</button>
-                </div>
-            </div>
-            <div class="scoreboard">
-                <h3>Tablica Wyników</h3>
-                <ul id="scoreList"></ul>
-            </div>
-        </div>
+
+    <div id="game-header">
+        <div class="stat">KROPLE: <b id="blood-val">0 / 0</b></div>
+        <h1 id="game-title">ROBBLORNE</h1>
+        <button class="restart-btn" onclick="triggerReset()">Restart [R]</button>
     </div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+    <div id="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
 
-        if (localStorage.getItem('theme') === 'light') {
-            document.body.classList.add('light-mode');
-        }
+    <div id="score-board">ZEBRANA KREW: <span id="total-points">0</span></div>
 
-        const ROW = 20;
-        const COL = 10;
-        let SQ = 20;
-        let VACANT = "#080808"; // Kolor pustego pola (zmienny w zależności od motywu)
+<script>
+const TILE_SIZE = 64;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const titleElem = document.getElementById('game-title');
 
-        function resizeGame() {
-            // Oblicz rozmiar kwadratu tak, aby plansza zajmowała ok. 60% wysokości ekranu
-            let availableHeight = window.innerHeight * 0.6;
-            SQ = Math.floor(availableHeight / ROW);
-            canvas.height = SQ * ROW;
-            canvas.width = SQ * COL;
-            drawBoard();
-        }
+const initialMap = [
+    "#############",
+    "#R..B......S#",
+    "#...B..######",
+    "#.K.B.......#",
+    "#####D#######",
+    "#S..........#",
+    "#######..S..#",
+    "#.......#####",
+    "#S..B......E#",
+    "#############"
+];
 
-        window.addEventListener('resize', resizeGame);
+let grid, player, bloodTotal, bloodCollected, keys, frame, isGameOver;
+let totalScore = 0;
+let enemies = [];
+let enemyUpdateTick = 0;
 
-        // Kształty
-        const PIECES = [
-            [Z, "#a93226"],
-            [S, "#1e8449"],
-            [T, "#6c3483"],
-            [O, "#b7950b"],
-            [L, "#af601a"],
-            [I, "#117864"],
-            [J, "#21618c"]
-        ];
+function showMessage(text, className, duration = 2000) {
+    titleElem.innerText = text;
+    titleElem.className = className;
+    setTimeout(() => {
+        titleElem.innerText = "ROBBLORNE";
+        titleElem.className = "";
+    }, duration);
+}
 
-        // Definicje klocków
-        function I() { return [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]]; }
-        function J() { return [[1,0,0],[1,1,1],[0,0,0]]; }
-        function L() { return [[0,0,1],[1,1,1],[0,0,0]]; }
-        function O() { return [[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]]; }
-        function S() { return [[0,1,1],[1,1,0],[0,0,0]]; }
-        function T() { return [[0,1,0],[1,1,1],[0,0,0]]; }
-        function Z() { return [[1,1,0],[0,1,1],[0,0,0]]; }
+function triggerReset() {
+    isGameOver = false;
+    grid = initialMap.map(row => row.split(''));
+    bloodCollected = 0; keys = 0; frame = 0;
+    bloodTotal = (initialMap.join('').match(/S/g) || []).length;
+    // Pająk startuje pod ścianą. Usunięto startX/range na rzecz fizycznego wykrywania ścian.
+    enemies = [{ x: 11, y: 3, dir: -1, icon: "🕷️" }];
+    updateUI();
+}
 
-        // Plansza
-        let board = [];
-        for(let r = 0; r < ROW; r++){
-            board[r] = [];
-            for(let c = 0; c < COL; c++){
-                board[r][c] = VACANT;
-            }
-        }
+function updateUI() {
+    document.getElementById('blood-val').innerText = `${bloodCollected} / ${bloodTotal}`;
+    document.getElementById('total-points').innerText = totalScore;
+}
 
-        resizeGame();
+function drawTile(x, y, type) {
+    const px = x * TILE_SIZE; const py = y * TILE_SIZE;
+    ctx.fillStyle = "#0c0d11"; ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+    ctx.strokeStyle = "#1a1a1a"; ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
 
-        function drawSquare(x, y, color){
-            ctx.fillStyle = color;
-            ctx.fillRect(x*SQ, y*SQ, SQ, SQ);
-            ctx.strokeStyle = "rgba(120, 160, 160, 0.1)";
-            ctx.strokeRect(x*SQ, y*SQ, SQ, SQ);
-        }
+    if (type === '#') {
+        ctx.fillStyle = "#1a1e26"; ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        ctx.strokeStyle = "#333"; ctx.strokeRect(px + 8, py + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+    } else if (type === 'R') {
+        ctx.font = "40px serif"; ctx.fillText("🕵️", px + 12, py + 48);
+        player = { x, y };
+    } else if (type === 'S') {
+        const pulse = Math.sin(frame * 0.1) * 3;
+        ctx.font = `${32 + pulse}px serif`; ctx.shadowBlur = 15; ctx.shadowColor = "red";
+        ctx.fillText("🩸", px + 15 - pulse/2, py + 45 + pulse/2);
+        ctx.shadowBlur = 0;
+    } else if (type === 'B') {
+        ctx.fillStyle = "#2a1515"; ctx.fillRect(px + 10, py + 8, TILE_SIZE - 20, TILE_SIZE - 16);
+        ctx.strokeStyle = "#444"; ctx.strokeRect(px + 14, py + 12, TILE_SIZE - 28, TILE_SIZE - 24);
+    } else if (type === 'K') {
+        ctx.font = "30px serif"; ctx.fillText("🗝️", px + 15, py + 45);
+    } else if (type === 'D') {
+        ctx.fillStyle = "#300000"; ctx.fillRect(px+2, py+2, TILE_SIZE-4, TILE_SIZE-4);
+        ctx.strokeStyle = "#c5a059"; ctx.strokeRect(px+6, py+6, TILE_SIZE-12, TILE_SIZE-12);
+        ctx.font = "30px serif"; ctx.fillText("⛩️", px + 15, py + 45);
+    } else if (type === 'E') {
+        if (bloodCollected < bloodTotal) ctx.globalAlpha = 0.2;
+        ctx.font = "45px serif"; ctx.shadowBlur = (bloodCollected >= bloodTotal) ? 20 : 0;
+        ctx.shadowColor = "#c5a059"; ctx.fillText("⛪", px + 10, py + 50);
+        ctx.globalAlpha = 1.0; ctx.shadowBlur = 0;
+    }
+}
 
-        function drawBoard(){
-            const isLight = document.body.classList.contains('light-mode');
-            VACANT = isLight ? "#f0f0f0" : "#080808";
+function updateEnemies() {
+    if (isGameOver) return;
+    enemyUpdateTick++;
+    if (enemyUpdateTick % 20 === 0) {
+        enemies.forEach(en => {
+            let nextX = en.x + en.dir;
             
-            for(let r = 0; r < ROW; r++){
-                for(let c = 0; c < COL; c++){
-                    // Jeśli pole jest "puste" (ma stary kolor tła), odśwież je nowym kolorem tła
-                    if (board[r][c] === "#080808" || board[r][c] === "#f0f0f0") {
-                        board[r][c] = VACANT;
-                    }
-                    drawSquare(c, r, board[r][c]);
-                }
-            }
-        }
-
-        // Klocek
-        let p = randomPiece();
-
-        function randomPiece(){
-            let r = Math.floor(Math.random() * PIECES.length);
-            return new Piece(PIECES[r][0], PIECES[r][1]);
-        }
-
-        function Piece(tetromino, color){
-            this.tetromino = tetromino();
-            this.color = color;
-            this.tetrominoN = 0; // start from the first pattern
-            this.activeTetromino = this.tetromino;
-            this.x = 3;
-            this.y = -2;
-        }
-
-        Piece.prototype.fill = function(color){
-            for(let r = 0; r < this.activeTetromino.length; r++){
-                for(let c = 0; c < this.activeTetromino.length; c++){
-                    if(this.activeTetromino[r][c]){
-                        drawSquare(this.x + c, this.y + r, color);
-                    }
-                }
-            }
-        }
-
-        Piece.prototype.draw = function(){
-            this.fill(this.color);
-        }
-
-        Piece.prototype.unDraw = function(){
-            this.fill(VACANT);
-        }
-
-        Piece.prototype.moveDown = function(){
-            if(!this.collision(0, 1, this.activeTetromino)){
-                this.unDraw();
-                this.y++;
-                this.draw();
-            }else{
-                this.lock();
-                p = randomPiece();
-            }
-        }
-
-        Piece.prototype.moveRight = function(){
-            if(!this.collision(1, 0, this.activeTetromino)){
-                this.unDraw();
-                this.x++;
-                this.draw();
-            }
-        }
-
-        Piece.prototype.moveLeft = function(){
-            if(!this.collision(-1, 0, this.activeTetromino)){
-                this.unDraw();
-                this.x--;
-                this.draw();
-            }
-        }
-
-        Piece.prototype.rotate = function(){
-            let nextPattern = this.tetromino; // simple rotation logic placeholder
-            // Transpose + Reverse for rotation
-            let N = this.activeTetromino.length;
-            let newPattern = [];
-            for(let i=0; i<N; i++) { newPattern.push(new Array(N).fill(0)); }
-            for(let y=0; y<N; y++) {
-                for(let x=0; x<N; x++) {
-                    newPattern[x][N-1-y] = this.activeTetromino[y][x];
-                }
+            // FIZYCZNE WYKRYWANIE ŚCIAN: 
+            // Pająk odbija się od wszystkiego co nie jest przejściem, krwią lub kluczem
+            let targetTile = grid[en.y][nextX];
+            if (targetTile === '#' || targetTile === 'B' || targetTile === 'D' || targetTile === 'E') {
+                en.dir *= -1; // Odbicie
+                nextX = en.x + en.dir;
             }
             
-            if(!this.collision(0, 0, newPattern)){
-                this.unDraw();
-                this.activeTetromino = newPattern;
-                this.draw();
-            }
+            en.x = nextX;
+            if (en.x === player.x && en.y === player.y) die();
+        });
+    }
+}
+
+function die() {
+    isGameOver = true;
+    showMessage("POCHŁONĘŁA CIĘ CIEMNOŚĆ", "msg-death");
+    setTimeout(triggerReset, 1500);
+}
+
+function win() {
+    isGameOver = true;
+    showMessage("KOSZMAR PRZEZWYCIĘŻONY", "msg-win");
+    setTimeout(triggerReset, 3000);
+}
+
+function update() {
+    canvas.width = grid[0].length * TILE_SIZE;
+    canvas.height = grid.length * TILE_SIZE;
+    updateEnemies();
+    grid.forEach((row, y) => { row.forEach((tile, x) => drawTile(x, y, tile)); });
+    enemies.forEach(en => {
+        ctx.font = "40px serif";
+        ctx.fillText(en.icon, en.x * TILE_SIZE + 12, en.y * TILE_SIZE + 48);
+    });
+    updateUI();
+    frame++; requestAnimationFrame(update);
+}
+
+window.onkeydown = (e) => {
+    if (isGameOver) return;
+    if (e.key.toLowerCase() === 'r') { triggerReset(); return; }
+    let dx = 0, dy = 0;
+    if (e.key === "ArrowUp") dy = -1; if (e.key === "ArrowDown") dy = 1;
+    if (e.key === "ArrowLeft") dx = -1; if (e.key === "ArrowRight") dx = 1;
+    if (dx === 0 && dy === 0) return;
+    
+    const nx = player.x + dx; const ny = player.y + dy;
+    if (!grid[ny] || !grid[ny][nx]) return;
+    if (enemies.some(en => en.x === nx && en.y === ny)) { die(); return; }
+
+    const target = grid[ny][nx];
+    if (target === '.' || target === 'S' || target === 'K') {
+        if (target === 'S') { bloodCollected++; totalScore++; }
+        if (target === 'K') keys++;
+        grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
+    } else if (target === 'B') {
+        const bx = nx + dx, by = ny + dy;
+        if (grid[by] && grid[by][bx] === '.') {
+            grid[by][bx] = 'B'; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
         }
+    } else if (target === 'D' && keys > 0) {
+        keys--; grid[player.y][player.x] = '.'; grid[ny][nx] = 'R';
+    } else if (target === 'E' && bloodCollected >= bloodTotal) {
+        win();
+    }
+};
 
-        let score = 0;
-
-        Piece.prototype.lock = function(){
-            for(let r = 0; r < this.activeTetromino.length; r++){
-                for(let c = 0; c < this.activeTetromino.length; c++){
-                    if(!this.activeTetromino[r][c]){ continue; }
-                    if(this.y + r < 0){
-                        // Game Over
-                        handleGameOver();
-                        break;
-                    }
-                    board[this.y+r][this.x+c] = this.color;
-                }
-            }
-            // Remove full rows
-            for(let r = 0; r < ROW; r++){
-                let isRowFull = true;
-                for(let c = 0; c < COL; c++){
-                    isRowFull = isRowFull && (board[r][c] != VACANT);
-                }
-                if(isRowFull){
-                    for(let y = r; y > 1; y--){
-                        for(let c = 0; c < COL; c++){
-                            board[y][c] = board[y-1][c];
-                        }
-                    }
-                    for(let c = 0; c < COL; c++){
-                        board[0][c] = VACANT;
-                    }
-                    score += 10;
-                    // Przyspieszenie co 50 punktów (5 linii)
-                    let level = Math.floor(score / 50);
-                    dropInterval = Math.max(100, 1000 - (level * 50));
-                    document.getElementById('score').innerText = 'Echoes of Blood: ' + score;
-                }
-            }
-            drawBoard();
-        }
-
-        Piece.prototype.collision = function(x, y, piece){
-            for(let r = 0; r < piece.length; r++){
-                for(let c = 0; c < piece.length; c++){
-                    if(!piece[r][c]){ continue; }
-                    let newX = this.x + c + x;
-                    let newY = this.y + r + y;
-                    if(newX < 0 || newX >= COL || newY >= ROW){ return true; }
-                    if(newY < 0){ continue; }
-                    if(board[newY][newX] != VACANT){ return true; }
-                }
-            }
-            return false;
-        }
-
-        document.addEventListener("keydown", CONTROL);
-
-        const leftBtn = document.getElementById('left-btn');
-        const rightBtn = document.getElementById('right-btn');
-        const rotateBtn = document.getElementById('rotate-btn');
-        const downBtn = document.getElementById('down-btn');
-
-        if(leftBtn) {
-            leftBtn.addEventListener('click', () => { p.moveLeft(); dropStart = Date.now(); });
-            rightBtn.addEventListener('click', () => { p.moveRight(); dropStart = Date.now(); });
-            rotateBtn.addEventListener('click', () => { p.rotate(); dropStart = Date.now(); });
-            downBtn.addEventListener('click', () => { p.moveDown(); });
-
-            // Touch events for mobile
-            leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveLeft(); dropStart = Date.now(); });
-            rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveRight(); dropStart = Date.now(); });
-            rotateBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.rotate(); dropStart = Date.now(); });
-            downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); p.moveDown(); });
-        }
-
-        // Obsługa gestów dotykowych (swipe) na obszarze gry
-        let touchStartX = null;
-        let touchStartY = null;
-
-        canvas.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            if (!touchStartX || !touchStartY) return;
-
-            let touchEndX = e.changedTouches[0].clientX;
-            let touchEndY = e.changedTouches[0].clientY;
-
-            let diffX = touchEndX - touchStartX;
-            let diffY = touchEndY - touchStartY;
-
-            // Reset
-            touchStartX = null;
-            touchStartY = null;
-
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                // Ruch poziomy
-                if (Math.abs(diffX) > 30) {
-                    if (diffX > 0) { p.moveRight(); }
-                    else { p.moveLeft(); }
-                    dropStart = Date.now();
-                }
-            } else {
-                // Ruch pionowy
-                if (diffY > 30) {
-                    p.moveDown();
-                } else if (Math.abs(diffX) < 10 && Math.abs(diffY) < 10) {
-                    // Tapnięcie - obrót
-                    p.rotate();
-                    dropStart = Date.now();
-                }
-            }
-        }, { passive: false });
-
-        function CONTROL(event){
-            if(event.keyCode == 37){ p.moveLeft(); dropStart = Date.now(); }
-            else if(event.keyCode == 38){ p.rotate(); dropStart = Date.now(); }
-            else if(event.keyCode == 39){ p.moveRight(); dropStart = Date.now(); }
-            else if(event.keyCode == 40){ p.moveDown(); }
-        }
-
-        let dropInterval = 1000;
-        let dropStart = Date.now();
-        function drop(){
-            let now = Date.now();
-            let delta = now - dropStart;
-            if(delta > dropInterval){
-                p.moveDown();
-                dropStart = Date.now();
-            }
-            requestAnimationFrame(drop);
-        }
-
-        drop();
-
-        function handleGameOver() {
-            if (score > 0) {
-                let name = prompt("Koniec gry! Twój wynik: " + score + ". Podaj swój nick:", "Gracz");
-                while (name !== null && name.trim().length === 0) {
-                    name = prompt("Nick nie może być pusty! Podaj swój nick:", "Gracz");
-                }
-                if (name) {
-                    saveHighScore(score, name.trim());
-                    updateScoreboard();
-                }
-            }
-            // Reset board
-            for(let r = 0; r < ROW; r++){
-                for(let c = 0; c < COL; c++){
-                    board[r][c] = VACANT;
-                }
-            }
-            score = 0;
-            dropInterval = 1000;
-            document.getElementById('score').innerText = 'Echoes of Blood: ' + score;
-            drawBoard();
-        }
-
-        function saveHighScore(score, name) {
-            let scores = JSON.parse(localStorage.getItem('tetrisHighScores')) || [];
-            scores.push({ score: score, name: name, date: new Date().toLocaleDateString() });
-            scores.sort((a, b) => b.score - a.score);
-            scores = scores.slice(0, 10);
-            localStorage.setItem('tetrisHighScores', JSON.stringify(scores));
-        }
-
-        function updateScoreboard() {
-            const scores = JSON.parse(localStorage.getItem('tetrisHighScores')) || [];
-            const list = document.getElementById('scoreList');
-            list.innerHTML = scores.map(s => `<li><span>${s.name || s.date}</span> <span>${s.score}</span></li>`).join('');
-        }
-
-        updateScoreboard();
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            drawBoard(); // Redraw to update background colors
-            p.draw(); // Redraw current piece
-        }
-    </script>
+triggerReset();
+update();
+</script>
 </body>
 </html>
