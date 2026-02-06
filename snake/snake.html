@@ -223,7 +223,7 @@
             <div class="game-area">
                 <canvas id="gameCanvas"></canvas>
                 <div id="score">Echoes of Blood: 0</div>
-                <div class="controls">Użyj strzałek, aby polować</div>
+                <div class="controls">Im dłużej głodujesz, tym szybciej pędzisz...</div>
                 <div class="mobile-controls">
                     <button id="up-btn">▲</button>
                     <div>
@@ -255,9 +255,14 @@
         let tileCountX = 20;
         let tileCountY = 20;
 
+        // Ustawienia prędkości (ms)
+        const BASE_SPEED = 120; // Wolniejszy start (wyższa liczba = wolniej)
+        const MIN_SPEED = 40;   // Maksymalna prędkość przy głodzie
+        let stepsSinceLastMeal = 0;
+
         function resizeGame() {
-            // Kwadratowa plansza: 72% mniejszego wymiaru ekranu (powiększone o 20%)
-            let size = Math.min(window.innerWidth, window.innerHeight) * 0.72;
+            // Zmniejszono mnożnik z 0.72 na ok 0.58 (zmniejszenie o 20%)
+            let size = Math.min(window.innerWidth, window.innerHeight) * 0.58;
             size = Math.floor(size / gridSize) * gridSize;
             canvas.width = size;
             canvas.height = size;
@@ -289,7 +294,6 @@
             if (playerY < 0) playerY = tileCountY - 1;
             if (playerY >= tileCountY) playerY = 0;
 
-            // Tło i siatka
             const isLight = document.body.classList.contains('light-mode');
             ctx.fillStyle = isLight ? '#f0f0f0' : '#080808';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -306,7 +310,7 @@
             }
             ctx.stroke();
 
-            ctx.fillStyle = '#8a8a8a'; // Kolor węża
+            ctx.fillStyle = '#8a8a8a';
             for (let i = 0; i < trail.length; i++) {
                 ctx.fillRect(trail[i].x * gridSize, trail[i].y * gridSize, gridSize - 2, gridSize - 2);
                 if (trail[i].x === playerX && trail[i].y === playerY && (velocityX !== 0 || velocityY !== 0)) {
@@ -314,7 +318,6 @@
                 }
             }
 
-            // Rysowanie głowy (grafika)
             ctx.save();
             ctx.translate(playerX * gridSize + gridSize / 2, playerY * gridSize + gridSize / 2);
             let angle = 0;
@@ -333,13 +336,20 @@
             if (foodX === playerX && foodY === playerY) {
                 tailLength++;
                 score += 100;
+                stepsSinceLastMeal = 0; // Reset głodu -> wąż zwalnia
                 document.getElementById('score').innerText = 'Echoes of Blood: ' + score;
                 foodX = Math.floor(Math.random() * tileCountX);
                 foodY = Math.floor(Math.random() * tileCountY);
+            } else if (velocityX !== 0 || velocityY !== 0) {
+                stepsSinceLastMeal++; // Inkrementacja głodu tylko gdy wąż się rusza
             }
 
-            ctx.fillStyle = '#8a0f0f'; // Kolor jedzenia (krew)
+            ctx.fillStyle = '#8a0f0f';
             ctx.fillRect(foodX * gridSize, foodY * gridSize, gridSize - 2, gridSize - 2);
+
+            // Obliczanie aktualnego opóźnienia: startuje od BASE_SPEED i maleje wraz z głodem
+            let currentDelay = Math.max(MIN_SPEED, BASE_SPEED - (stepsSinceLastMeal * 0.5));
+            setTimeout(game, currentDelay);
         }
 
         function keyPush(evt) {
@@ -359,26 +369,19 @@
         const rightBtn = document.getElementById('right-btn');
 
         if (upBtn) {
-            upBtn.addEventListener('click', () => { if (velocityY !== 1) { velocityX = 0; velocityY = -1; } });
-            downBtn.addEventListener('click', () => { if (velocityY !== -1) { velocityX = 0; velocityY = 1; } });
-            leftBtn.addEventListener('click', () => { if (velocityX !== 1) { velocityX = -1; velocityY = 0; } });
-            rightBtn.addEventListener('click', () => { if (velocityX !== -1) { velocityX = 1; velocityY = 0; } });
-
-            // Touch events for mobile
-            upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (velocityY !== 1) { velocityX = 0; velocityY = -1; } });
-            downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (velocityY !== -1) { velocityX = 0; velocityY = 1; } });
-            leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (velocityX !== 1) { velocityX = -1; velocityY = 0; } });
-            rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (velocityX !== -1) { velocityX = 1; velocityY = 0; } });
+            const setDir = (vx, vy) => { velocityX = vx; velocityY = vy; };
+            upBtn.addEventListener('click', () => { if (velocityY !== 1) setDir(0, -1); });
+            downBtn.addEventListener('click', () => { if (velocityY !== -1) setDir(0, 1); });
+            leftBtn.addEventListener('click', () => { if (velocityX !== 1) setDir(-1, 0); });
+            rightBtn.addEventListener('click', () => { if (velocityX !== -1) setDir(1, 0); });
         }
 
-        setInterval(game, 1000 / 15);
+        // Start gry (zastępuje setInterval)
+        setTimeout(game, BASE_SPEED);
 
         function handleGameOver() {
             if (score > 0) {
                 let name = prompt("Koniec polowania! Twój wynik: " + score + ". Podaj swój nick:", "Łowca");
-                while (name !== null && name.trim().length === 0) {
-                    name = prompt("Nick nie może być pusty! Podaj swój nick:", "Łowca");
-                }
                 if (name) {
                     saveHighScore(score, name.trim());
                     updateScoreboard();
@@ -386,6 +389,7 @@
             }
             tailLength = 5;
             score = 0;
+            stepsSinceLastMeal = 0;
             document.getElementById('score').innerText = 'Echoes of Blood: ' + score;
         }
 
@@ -393,7 +397,7 @@
             let scores = JSON.parse(localStorage.getItem('snakeHighScores')) || [];
             scores.push({ score: score, name: name, date: new Date().toLocaleDateString() });
             scores.sort((a, b) => b.score - a.score);
-            scores = scores.slice(0, 10); // Zachowaj top 10
+            scores = scores.slice(0, 10);
             localStorage.setItem('snakeHighScores', JSON.stringify(scores));
         }
 
@@ -403,7 +407,6 @@
             list.innerHTML = scores.map(s => `<li><span>${s.name || s.date}</span> <span>${s.score}</span></li>`).join('');
         }
 
-        // Inicjalizacja tablicy wyników
         updateScoreboard();
 
         function toggleTheme() {
