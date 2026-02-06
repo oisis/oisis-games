@@ -14,7 +14,7 @@ body {
     background-position: center;
     background-size: cover;
     background-attachment: fixed;
-    touch-action: none; /* Blokada gestów przeglądarki */
+    touch-action: none; 
 }
 
 .container {
@@ -70,8 +70,8 @@ h1 {
     text-transform: uppercase;
     padding: 5px 10px;
     border: 1px solid #ccc;
-    background-color: #e0e0e0; /* Jasne tło */
-    color: #1a1a1a;            /* Ciemny tekst */
+    background-color: #e0e0e0;
+    color: #1a1a1a;
     font-weight: bold;
     transition: all 0.3s;
     text-align: center;
@@ -98,8 +98,8 @@ body.light-mode .back-button:hover {
     color: #cc0000; border-color: #cc0000;
 }
 body.light-mode .theme-switch {
-    background-color: #1a1a1a; /* Ciemne tło */
-    color: #e0e0e0;            /* Jasny tekst */
+    background-color: #1a1a1a;
+    color: #e0e0e0;
     border-color: #000;
 }
 body.light-mode .theme-switch:hover {
@@ -132,43 +132,20 @@ canvas {
 .score-info { margin-top: 15px; font-size: 1.1rem; }
 .controls-hint { margin-top: 10px; font-size: 0.8rem; color: #666; font-style: italic; font-family: sans-serif; }
 
-/* --- MOBILE CONTROLS --- */
-.mobile-controls {
-    display: none;
-    margin-top: 20px;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-.dpad {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.dpad button {
-    width: 50px; height: 50px;
-    font-size: 20px;
-    background: rgba(0,0,0,0.5);
-    color: #ccc;
-    border: 1px solid #444;
-    cursor: pointer;
-    touch-action: manipulation;
-}
-.dpad-middle {
-    display: flex;
-    gap: 5px;
-    margin: 5px 0;
-}
-.mobile-restart {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    background: #3a0a0a;
-    color: #fff;
-    border: 1px solid #5e0b0b;
-    font-size: 24px;
+/* --- MOBILE SPECIFIC --- */
+.mobile-hint {
+    display: none; /* Domyślnie ukryte na PC */
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #777;
+    font-style: italic;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 5px;
+    font-family: sans-serif;
 }
 
-/* --- RESPONSYWNOŚĆ --- */
 @media (max-width: 768px) {
     .container {
         padding-top: 60px;
@@ -177,9 +154,16 @@ canvas {
     }
     h1 { font-size: 1.5rem; margin-top: 0; }
     .game-info { font-size: 0.9rem; }
-    .restart-btn { display: none; } /* Ukrywamy przycisk tekstowy na mobile */
-    .mobile-controls { display: flex; }
+    
+    /* Na mobile pokazujemy przycisk Restart, ale robimy go bardziej "dotykowym" */
+    .restart-btn { 
+        display: block; 
+        padding: 8px 12px;
+        background: rgba(0,0,0,0.2);
+    }
+    
     .controls-hint { display: none; }
+    .mobile-hint { display: block; }
     
     .back-button { top: 15px; left: 15px; }
     .theme-switch { top: 15px; right: 15px; }

@@ -5,25 +5,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const bloodValElem = document.getElementById('blood-val');
     const totalPointsElem = document.getElementById('total-points');
 
-    // Obsługa motywu na starcie
     if (localStorage.getItem('theme') === 'light') {
         document.body.classList.add('light-mode');
     }
 
     const TILE_SIZE = 64;
     
-    // MAPA GRY
     const initialMap = [
-        "#############", // 9
-        "#R..B......S#", // 8
-        "#...B..######", // 7
-        "#..........K#", // 6 
-        "#####D#######", // 5
-        "#S..........#", // 4
-        "#######..S..#", // 3
-        "#.......#####", // 2
-        "#S..B......E#", // 1
-        "#############"  // 0
+        "#############", 
+        "#R..B......S#", 
+        "#...B..######", 
+        "#..........K#", 
+        "#####D#######", 
+        "#S..........#", 
+        "#######..S..#", 
+        "#.......#####", 
+        "#S..B......E#", 
+        "#############"  
     ];
 
     let grid, player, bloodTotal, bloodCollected, keys, frame, isGameOver;
@@ -31,28 +29,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let enemies = [];
     let enemyUpdateTick = 0;
 
-    // --- FUNKCJE POMOCNICZE ---
-    
     function safeGetText(key) {
         if (typeof getText === 'function') return getText(key);
         return "";
     }
 
-    // Funkcja skalująca canvas, żeby mieścił się na ekranie telefonu
     function resizeCanvas() {
         const mapWidth = initialMap[0].length * TILE_SIZE;
         const mapHeight = initialMap.length * TILE_SIZE;
-        
-        // Ustawiamy wewnętrzną rozdzielczość
         canvas.width = mapWidth;
         canvas.height = mapHeight;
-        
-        // CSS zajmie się skalowaniem wizualnym (max-width: 100%)
     }
 
     function triggerReset() {
         isGameOver = false;
-        // Kopia mapy (deep copy)
         grid = initialMap.map(row => row.split(''));
         
         bloodCollected = 0; 
@@ -60,14 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
         frame = 0;
         bloodTotal = (initialMap.join('').match(/S/g) || []).length;
         
-        // Znajdź gracza na mapie
         for(let y=0; y<grid.length; y++) {
             for(let x=0; x<grid[y].length; x++) {
                 if(grid[y][x] === 'R') player = {x, y};
             }
         }
 
-        // Pająk na start
         enemies = [{ x: 10, y: 3, dir: -1, icon: "🕷️" }];
         
         titleElem.innerText = safeGetText('gameTitle'); 
@@ -81,8 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(totalPointsElem) totalPointsElem.innerText = totalScore;
         localStorage.setItem('totalScore', totalScore);
     }
-
-    // --- RYSOWANIE ---
 
     function drawHunter(px, py) {
         ctx.save();
@@ -113,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawTile(x, y, type) {
         const px = x * TILE_SIZE; const py = y * TILE_SIZE;
         const isLight = document.body.classList.contains('light-mode');
-        const PADDING = 8;
         
         ctx.fillStyle = isLight ? "#e0e0e0" : "#0c0d11"; ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
         ctx.strokeStyle = isLight ? "#ccc" : "#1a1a1a"; ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
@@ -175,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function update() {
-        // Czyścimy i rysujemy
         updateEnemies();
         grid.forEach((row, y) => { row.forEach((tile, x) => drawTile(x, y, tile)); });
         enemies.forEach(en => { ctx.font = "40px serif"; ctx.fillText(en.icon, en.x * TILE_SIZE + 12, en.y * TILE_SIZE + 48); });
@@ -185,19 +169,17 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(update);
     }
 
-    // --- STEROWANIE ---
-    
+    // --- LOGIKA RUCHU ---
     function movePlayer(dx, dy) {
         if (isGameOver) return;
         const nx = player.x + dx, ny = player.y + dy;
         
-        if (!grid[ny] || !grid[ny][nx]) return; // Poza mapą
+        if (!grid[ny] || !grid[ny][nx]) return; 
         
         if (enemies.some(en => en.x === nx && en.y === ny)) { die(); return; }
         
         const target = grid[ny][nx];
         
-        // Logika ruchu
         if (target === '.' || target === 'S' || target === 'K') {
             if (target === 'S') { bloodCollected++; totalScore++; }
             if (target === 'K') keys++;
@@ -217,6 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- STEROWANIE ---
+    
     // Klawiatura
     window.onkeydown = (e) => {
         if (e.key.toLowerCase() === 'r') { triggerReset(); return; }
@@ -226,34 +210,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === "ArrowRight") movePlayer(1, 0);
     };
 
-    // Mobilne przyciski
-    const upBtn = document.getElementById('up-btn');
-    const downBtn = document.getElementById('down-btn');
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
-    const mobileRestart = document.getElementById('mobileRestartBtn');
-    const restartBtn = document.getElementById('restartBtn');
+    // Obsługa Gestów (Swipe)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const SWIPE_THRESHOLD = 30; // Min. przesunięcie, by uznać za gest
+    const touchArea = document.body; // Łapiemy gesty na całym ekranie
 
-    // Funkcja do obsługi dotyku (zapobiega zoomowaniu/przewijaniu)
-    const handleTouch = (action, e) => {
-        if(e) e.preventDefault();
-        action();
-    };
-
-    if(upBtn) {
-        upBtn.addEventListener('touchstart', (e) => handleTouch(() => movePlayer(0, -1), e));
-        downBtn.addEventListener('touchstart', (e) => handleTouch(() => movePlayer(0, 1), e));
-        leftBtn.addEventListener('touchstart', (e) => handleTouch(() => movePlayer(-1, 0), e));
-        rightBtn.addEventListener('touchstart', (e) => handleTouch(() => movePlayer(1, 0), e));
+    touchArea.addEventListener('touchstart', (e) => {
+        // Ignoruj dotyk na przyciskach
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
         
-        // Obsługa kliknięć też, dla testów desktopowych
-        upBtn.addEventListener('click', () => movePlayer(0, -1));
-        downBtn.addEventListener('click', () => movePlayer(0, 1));
-        leftBtn.addEventListener('click', () => movePlayer(-1, 0));
-        rightBtn.addEventListener('click', () => movePlayer(1, 0));
-    }
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, {passive: false});
 
-    if(mobileRestart) mobileRestart.addEventListener('click', triggerReset);
+    touchArea.addEventListener('touchmove', (e) => {
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
+        e.preventDefault(); // Blokada scrollowania
+    }, {passive: false});
+
+    touchArea.addEventListener('touchend', (e) => {
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.theme-switch')) return;
+
+        let endX = e.changedTouches[0].clientX;
+        let endY = e.changedTouches[0].clientY;
+
+        let diffX = endX - touchStartX;
+        let diffY = endY - touchStartY;
+
+        // Sprawdzamy, czy ruch był poziomy czy pionowy
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            // Ruch Poziomy
+            if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+                if (diffX > 0) movePlayer(1, 0); // Prawo
+                else movePlayer(-1, 0);          // Lewo
+            }
+        } else {
+            // Ruch Pionowy
+            if (Math.abs(diffY) > SWIPE_THRESHOLD) {
+                if (diffY > 0) movePlayer(0, 1); // Dół
+                else movePlayer(0, -1);          // Góra
+            }
+        }
+    });
+
+    const restartBtn = document.getElementById('restartBtn');
     if(restartBtn) restartBtn.addEventListener('click', triggerReset);
 
     // --- MOTYW ---

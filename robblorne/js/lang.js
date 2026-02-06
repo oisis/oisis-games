@@ -8,6 +8,7 @@ const Translations = {
         dropsLabel: "KROPLE:",
         totalBloodLabel: "ZEBRANA KREW:",
         controlsHint: "Strzałki: Ruch | R: Restart",
+        mobileHint: "Przesuń palcem, aby wykonać krok", // Nowe
         restartBtn: "Restart [R]",
         msgDeath: "POCHŁONĘŁA CIĘ CIEMNOŚĆ",
         msgWin: "KOSZMAR PRZEZWYCIĘŻONY"
@@ -21,6 +22,7 @@ const Translations = {
         dropsLabel: "DROPS:",
         totalBloodLabel: "TOTAL BLOOD:",
         controlsHint: "Arrows: Move | R: Restart",
+        mobileHint: "Swipe to take a step", // Nowe
         restartBtn: "Restart [R]",
         msgDeath: "DARKNESS CONSUMED YOU",
         msgWin: "NIGHTMARE VANQUISHED"
@@ -39,17 +41,15 @@ function applyTranslations() {
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (key === 'themeSwitch') return; // Obsługa dynamiczna
+        if (key === 'themeSwitch') return; 
         if (Translations[currentLang][key]) {
             el.innerText = getText(key);
         }
     });
 
-    // Przycisk Restartu
     const restartBtn = document.getElementById('restartBtn');
     if (restartBtn) restartBtn.innerText = getText('restartBtn');
 
-    // Dynamiczna zmiana przycisku motywu
     const themeBtn = document.querySelector('.theme-switch');
     if (themeBtn) {
         const isLight = document.body.classList.contains('light-mode');
