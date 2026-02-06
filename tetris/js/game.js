@@ -351,4 +351,38 @@ document.addEventListener('DOMContentLoaded', () => {
         let endX = e.changedTouches[0].clientX;
         let endY = e.changedTouches[0].clientY;
         let totalDiffX = Math.abs(endX - touchStartX);
-        let totalDiffY = Math.
+        let totalDiffY = Math.abs(endY - touchStartY);
+
+        // Wykrycie TAPNIĘCIA (Krótko i w miejscu -> Obrót)
+        if (touchDuration < 300 && totalDiffX < TAP_THRESHOLD && totalDiffY < TAP_THRESHOLD) {
+            p.rotate();
+            dropStart = Date.now();
+        }
+    });
+
+    // --- MOTYW ---
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        
+        drawBoard(); 
+        if(!gameOver) p.draw();
+        
+        if (typeof applyTranslations === 'function') {
+            applyTranslations();
+        }
+    }
+
+    const themeBtn = document.querySelector('.theme-switch');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', toggleTheme);
+    }
+
+    // --- START ---
+    window.addEventListener('resize', resizeGame);
+    resizeGame();
+    updateScoreboard();
+    scoreElement.innerText = safeGetText('scorePrefix') + score;
+    drop();
+});
