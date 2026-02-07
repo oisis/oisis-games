@@ -10,12 +10,13 @@ const Levels = [
             "#####D#######", 
             "#S..........#", 
             "#######..S..#", 
-            "#.......#####", 
-            "#S..B......E#", 
+            "#S#.....#####", 
+            "#...B......E#", 
             "#############"
         ],
         enemies: [
-            { x: 10, y: 3, dir: -1, icon: "🕷️" }
+            { x: 10, y: 3, dir: -1, icon: "🕷️", axis: 'x' },
+            { x: 7, y: 6, dir: -1, icon: "🕷️", axis: 'y' }
         ]
     },
 
@@ -34,8 +35,8 @@ const Levels = [
             "#############"
         ],
         enemies: [
-            { x: 1, y: 1, dir: 1, icon: "🕷️" },
-            { x: 11, y: 7, dir: -1, icon: "🕷️" }
+            { x: 1, y: 1, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 11, y: 7, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -54,7 +55,7 @@ const Levels = [
         enemies: [
             // Jeden pająk chodzący po środkowym korytarzu lewo-prawo.
             // Masz czas, żeby przebiec z góry na dół, gdy on jest daleko.
-            { x: 1, y: 3, dir: 1, icon: "🕷️" }
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -72,7 +73,9 @@ const Levels = [
             "#S....D..E#",
             "###########"
         ],
-        enemies: [] // Skupiamy się na logice
+        enemies: [
+            { x: 7, y: 4, dir: 1, icon: "🕷️", axis: 'y' }
+        ] // Skupiamy się na logice
     },
 
     // --- POZIOM 5: Zygzak Śmierci ---
@@ -82,17 +85,18 @@ const Levels = [
             "#############",
             "#R..........#",
             "#######.#####",
-            "#S....#.#....#", // Tutaj pająk 1 (lewa strona)
-            "#.#####.###.##",
-            "#.#S........#K#", // Tutaj pająk 2 (środek)
+            "#S...E#.....#", // Tutaj pająk 1 (lewa strona)
+            "#.##.##.###.##",
+            "#..S.......K#", // Tutaj pająk 2 (środek)
             "#.#########.##",
-            "#S....D....S.E#", // Dół: Drzwi i Wyjście
+            "#S....D..S..#", // Dół: Drzwi i Wyjście
             "#############"
         ],
         enemies: [
             // Pająki mają teraz ograniczone trasy, nie blokują całej mapy
-            { x: 1, y: 3, dir: 1, icon: "🕷️" },
-            { x: 4, y: 5, dir: 1, icon: "🕷️" }
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 4, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 7, y: 3, dir: 1, icon: "🕷️", axis: 'y' }
         ]
     },
 
@@ -109,8 +113,8 @@ const Levels = [
             "#####E#####"
         ],
         enemies: [
-            { x: 1, y: 3, dir: 1, icon: "🕷️" }, // Pająk przechodzi przez środek (przez R)
-            { x: 9, y: 3, dir: -1, icon: "🕷️" }
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }, // Pająk przechodzi przez środek (przez R)
+            { x: 9, y: 3, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -129,7 +133,7 @@ const Levels = [
             "#############"
         ],
         enemies: [
-            { x: 10, y: 5, dir: -1, icon: "🕷️" }
+            { x: 10, y: 5, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -148,10 +152,10 @@ const Levels = [
             "###############"
         ],
         enemies: [
-            { x: 1, y: 2, dir: 1, icon: "🕷️" },
-            { x: 13, y: 3, dir: -1, icon: "🕷️" },
-            { x: 1, y: 5, dir: 1, icon: "🕷️" },
-            { x: 13, y: 6, dir: -1, icon: "🕷️" }
+            { x: 1, y: 2, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 13, y: 3, dir: -1, icon: "🕷️", axis: 'x' },
+            { x: 1, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 13, y: 6, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -168,9 +172,9 @@ const Levels = [
             "#############"
         ],
         enemies: [
-            { x: 1, y: 3, dir: 1, icon: "🕷️" },
-            { x: 6, y: 3, dir: 1, icon: "🕷️" }, // Dwa pająki w jednym rzędzie
-            { x: 11, y: 3, dir: -1, icon: "🕷️" }
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 6, y: 3, dir: 1, icon: "🕷️", axis: 'x' }, // Dwa pająki w jednym rzędzie
+            { x: 11, y: 3, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -190,8 +194,8 @@ const Levels = [
             "#################"
         ],
         enemies: [
-            { x: 2, y: 5, dir: 1, icon: "🕷️" },
-            { x: 14, y: 5, dir: -1, icon: "🕷️" }
+            { x: 2, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 14, y: 5, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -210,8 +214,8 @@ const Levels = [
             "###########"
         ],
         enemies: [
-            { x: 2, y: 5, dir: 1, icon: "🕷️" },
-            { x: 8, y: 5, dir: -1, icon: "🕷️" }
+            { x: 2, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 8, y: 5, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -229,7 +233,7 @@ const Levels = [
             "#########"
         ],
         enemies: [
-            { x: 2, y: 1, dir: 1, icon: "🕷️" }
+            { x: 2, y: 1, dir: 1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -248,10 +252,10 @@ const Levels = [
             "###################"
         ],
         enemies: [
-            { x: 2, y: 1, dir: 1, icon: "🕷️" },
-            { x: 14, y: 3, dir: -1, icon: "🕷️" },
-            { x: 2, y: 5, dir: 1, icon: "🕷️" },
-            { x: 14, y: 7, dir: -1, icon: "🕷️" }
+            { x: 2, y: 1, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 14, y: 3, dir: -1, icon: "🕷️", axis: 'x' },
+            { x: 2, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 14, y: 7, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -269,7 +273,7 @@ const Levels = [
             "#############"
         ],
         enemies: [
-            { x: 1, y: 3, dir: 1, icon: "🕷️" }
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x'}
         ]
     },
 
@@ -290,8 +294,8 @@ const Levels = [
             "################"
         ],
         enemies: [
-            { x: 5, y: 5, dir: 1, icon: "🕷️" },
-            { x: 10, y: 5, dir: -1, icon: "🕷️" }
+            { x: 5, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 10, y: 5, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -310,9 +314,9 @@ const Levels = [
             "#############"
         ],
         enemies: [
-            { x: 1, y: 2, dir: 1, icon: "🕷️" },
-            { x: 10, y: 5, dir: -1, icon: "🕷️" },
-            { x: 1, y: 7, dir: 1, icon: "🕷️" }
+            { x: 1, y: 2, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 10, y: 5, dir: -1, icon: "🕷️", axis: 'x' },
+            { x: 1, y: 7, dir: 1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -331,8 +335,8 @@ const Levels = [
             "#################"
         ],
         enemies: [
-            { x: 5, y: 1, dir: 1, icon: "🕷️" },
-            { x: 6, y: 3, dir: 1, icon: "🕷️" }
+            { x: 5, y: 1, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 6, y: 3, dir: 1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -351,9 +355,9 @@ const Levels = [
             "###########"
         ],
         enemies: [
-            { x: 1, y: 1, dir: 1, icon: "🕷️" },
-            { x: 1, y: 3, dir: 1, icon: "🕷️" },
-            { x: 9, y: 5, dir: -1, icon: "🕷️" }
+            { x: 1, y: 1, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' },
+            { x: 9, y: 5, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -372,9 +376,9 @@ const Levels = [
             "###############"
         ],
         enemies: [
-            { x: 7, y: 5, dir: 1, icon: "🕷️" }, // Pająk pilnujący środka
-            { x: 1, y: 7, dir: 1, icon: "🕷️" }, // Dolny patrol
-            { x: 13, y: 7, dir: -1, icon: "🕷️" }
+            { x: 7, y: 5, dir: 1, icon: "🕷️", axis: 'x' }, // Pająk pilnujący środka
+            { x: 1, y: 7, dir: 1, icon: "🕷️", axis: 'x' }, // Dolny patrol
+            { x: 13, y: 7, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
@@ -397,14 +401,14 @@ const Levels = [
             "###################"
         ],
         enemies: [
-            { x: 1, y: 2, dir: 1, icon: "🕷️" },  // Górny rząd
-            { x: 17, y: 2, dir: -1, icon: "🕷️" },
+            { x: 1, y: 2, dir: 1, icon: "🕷️", axis: 'x' },  // Górny rząd
+            { x: 17, y: 2, dir: -1, icon: "🕷️", axis: 'x' },
             
-            { x: 5, y: 6, dir: 1, icon: "🕷️" },  // Środek
-            { x: 13, y: 6, dir: -1, icon: "🕷️" },
+            { x: 5, y: 6, dir: 1, icon: "🕷️", axis: 'x' },  // Środek
+            { x: 13, y: 6, dir: -1, icon: "🕷️", axis: 'x' },
 
-            { x: 1, y: 9, dir: 1, icon: "🕷️" },  // Dół
-            { x: 17, y: 9, dir: -1, icon: "🕷️" }
+            { x: 1, y: 9, dir: 1, icon: "🕷️", axis: 'x' },  // Dół
+            { x: 17, y: 9, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     }
 ];

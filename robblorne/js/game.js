@@ -128,21 +128,38 @@ document.addEventListener('DOMContentLoaded', () => {
         enemyUpdateTick++;
         if (enemyUpdateTick % 20 === 0) {
             enemies.forEach(en => {
-                let nextX = en.x + en.dir;
-                if (nextX < 0 || nextX >= grid[0].length) { en.dir *= -1; return; }
-                let target = grid[en.y][nextX];
+                // Sprawdzamy czy pająk ma zdefiniowaną oś, domyślnie 'x'
+                const axis = en.axis || 'x'; 
                 
-                // ZMIANA: Dodano 'S' (Krew) do listy obiektów, od których odbija się pająk
-                if (target === '#' || target === 'B' || target === 'D' || target === 'E' || target === 'K' || target === 'S') { 
+                let nextX = en.x;
+                let nextY = en.y;
+
+                if (axis === 'x') {
+                    nextX += en.dir;
+                } else {
+                    nextY += en.dir;
+                }
+
+                // Sprawdzenie granic mapy
+                if (nextY < 0 || nextY >= grid.length || nextX < 0 || nextX >= grid[0].length) {
+                    en.dir *= -1;
+                    return;
+                }
+
+                let target = grid[nextY][nextX];
+                
+                // Obiekty kolizyjne: ściany, skrzynie, drzwi, wyjście, klucze, krew
+                const obstacles = ['#', 'B', 'D', 'E', 'K', 'S'];
+                
+                if (obstacles.includes(target)) { 
                     en.dir *= -1; 
-                    nextX = en.x + en.dir; 
+                    // Po odbiciu nie wykonujemy ruchu w tej klatce, by uniknąć drgań
+                    return;
                 }
                 
-                // Finalne sprawdzenie przed ruchem
-                const finalTarget = grid[en.y][nextX];
-                if (finalTarget !== '#' && finalTarget !== 'B' && finalTarget !== 'S') {
-                    en.x = nextX;
-                }
+                // Wykonanie ruchu
+                en.x = nextX;
+                en.y = nextY;
                 
                 if (en.x === player.x && en.y === player.y) die();
             });
