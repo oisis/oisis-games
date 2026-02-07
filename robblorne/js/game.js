@@ -131,8 +131,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 let nextX = en.x + en.dir;
                 if (nextX < 0 || nextX >= grid[0].length) { en.dir *= -1; return; }
                 let target = grid[en.y][nextX];
-                if (target === '#' || target === 'B' || target === 'D' || target === 'E' || target === 'K') { en.dir *= -1; nextX = en.x + en.dir; }
-                if (grid[en.y][nextX] !== '#' && grid[en.y][nextX] !== 'B') en.x = nextX;
+                
+                // ZMIANA: Dodano 'S' (Krew) do listy obiektów, od których odbija się pająk
+                if (target === '#' || target === 'B' || target === 'D' || target === 'E' || target === 'K' || target === 'S') { 
+                    en.dir *= -1; 
+                    nextX = en.x + en.dir; 
+                }
+                
+                // Finalne sprawdzenie przed ruchem
+                const finalTarget = grid[en.y][nextX];
+                if (finalTarget !== '#' && finalTarget !== 'B' && finalTarget !== 'S') {
+                    en.x = nextX;
+                }
+                
                 if (en.x === player.x && en.y === player.y) die();
             });
         }
@@ -217,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isGameOver) return;
         if (e.key.toLowerCase() === 'r') { die(); return; }
         if (e.key.toLowerCase() === 'n') { triggerReset(true); return; }
-        
         if (e.repeat) return; 
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
             activeKey = e.key;

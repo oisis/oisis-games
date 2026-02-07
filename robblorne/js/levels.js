@@ -64,7 +64,7 @@ const Levels = [
         map: [
             "###########",
             "#R.......S#",
-            "#####.###.#",
+            "###.#####.#",
             "#S..B.....#", // Ta skrzynia blokuje dostęp do dolnej części
             "###.###.###",
             "#K..B...S.#", // Musisz przepchnąć tę skrzynię, by dostać się do K
