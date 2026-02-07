@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elden Quiz</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-button" id="back-btn" data-i18n="backButton">Powrót</a>
+        <div class="theme-switch" onclick="toggleTheme()" id="theme-btn">CIEMNY</div>
+        
+        <h1 id="quiz-title">ELDEN QUIZ</h1>
+        
+        <div class="game-info">
+            <div class="stats">
+                <span data-i18n="livesLabel">ŻYCIA</span>: <span id="lives-val"></span>
+                <br>
+                <span data-i18n="questionLabel">PYTANIE</span>: <span id="question-count"></span>
+            </div>
+            <div class="counters">
+                <span style="color: #c5a059;">✔: <span id="correct-counter">0</span></span>
+                <span style="color: #8a0f0f; margin-left: 10px;">✘: <span id="wrong-counter">0</span></span>
+            </div>
+            <div class="score"><span data-i18n="scoreLabel">PUNKTY</span>: <span id="score-val">0</span></div>
+        </div>
+
+        <div id="quiz-box">
+            <p id="question-text">Ładowanie...</p>
+            <div id="options-container"></div>
+        </div>
+
+        <div id="message-box"></div>
+        
+        <div class="action-buttons">
+            <button id="next-btn" style="display:none;" onclick="proceedToNext()" data-i18n="nextBtn">NASTĘPNE</button>
+            <button id="restart-btn" style="display:none;" onclick="startNewGame()" data-i18n="restartBtn">ZAGRAJ PONOWNIE</button>
+        </div>
+    </div>
+
+    <script src="js/lang.js"></script>
+    <script src="js/questions.js"></script>
+    <script src="js/quiz.js"></script>
+</body>
+</html>
