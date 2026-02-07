@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+
+body {
+    background-color: #050505; color: #c5a059; font-family: 'Cinzel', serif;
+    display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;
+    background-image: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
+    transition: 0.3s;
+}
+
+body.light-mode { background-color: #e0e0e0; color: #2a2a2a; background-image: none; }
+
+.container {
+    width: 95%; max-width: 750px; background: rgba(8, 8, 8, 0.98); border: 1px solid #333;
+    padding: 40px; text-align: center; position: relative; box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+}
+
+.container::after {
+    content: ""; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1px solid #5e0b0b; pointer-events: none; opacity: 0.3;
+}
+
+body.light-mode .container { background: #f0f0f0; border-color: #bbb; }
+
+.back-button, .theme-switch {
+    position: absolute; top: 20px; cursor: pointer; font-size: 0.8rem; font-family: sans-serif;
+    padding: 6px 15px; font-weight: bold; text-decoration: none; transition: 0.3s;
+    background-color: #c5a059; color: #000; border: none; z-index: 20;
+}
+
+.back-button { left: 20px; } .theme-switch { right: 20px; }
+
+.img-wrapper { 
+    width: 100%; height: 300px; margin-bottom: 20px; 
+    border: 1px solid #5e4b2a; background: #000;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.img-wrapper svg { width: 100%; height: 100%; }
+
+#story-box {
+    margin: 20px 0; min-height: 120px; line-height: 1.6; font-size: 1.1rem;
+    text-align: left; border-left: 3px solid #8a0f0f; padding-left: 20px;
+}
+
+.choice-btn {
+    display: block; width: 100%; margin: 10px 0; padding: 15px;
+    background: #151515; border: 1px solid #333; color: #c5a059;
+    cursor: pointer; font-family: 'Cinzel', serif; transition: 0.2s; text-align: left;
+}
+
+.choice-btn:hover { background: #8a0f0f; color: white; border-color: #ff0000; }
+body.light-mode .choice-btn { background: #fff; color: #222; }
+
+.game-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #5e4b2a; padding-bottom: 10px; }
+.status-badge { padding: 5px 15px; background: #5e4b2a; color: white; font-size: 0.7rem; font-weight: bold; }
+
+#restart-btn { margin-top: 20px; padding: 15px 30px; background: #8a0f0f; color: white; border: none; cursor: pointer; font-family: 'Cinzel', serif; font-size: 1.1rem; }

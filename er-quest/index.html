@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elden Quest</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-button" data-i18n="backButton">Powrót</a>
+        <div class="theme-switch" onclick="toggleTheme()" id="theme-btn">JASNY</div>
+        
+        <h1 id="game-title">ELDEN QUEST</h1>
+        
+        <div class="game-info">
+            <div class="stats">
+                <span data-i18n="locationLabel">LOKACJA</span>: <span id="location-val">...</span>
+                <br>
+                <span data-i18n="scoreLabel">RUNY</span>: <span id="score-val">0</span>
+            </div>
+            <div class="status-badge" id="status-val">ACTIVE</div>
+        </div>
+
+        <div id="story-box">
+            <div class="img-wrapper" id="img-container"></div>
+            <p id="story-text">Ładowanie opowieści...</p>
+        </div>
+
+        <div id="choices-container"></div>
+        <button id="restart-btn" style="display:none;" onclick="resetGame()" data-i18n="restartBtn">ZACZNIJ OD NOWA</button>
+    </div>
+
+    <script src="js/lang.js"></script>
+    <script src="js/scenarios.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
