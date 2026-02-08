@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDirection = { dx: 0, dy: 0 };
     let activeKey = null;
 
+    // Variables for touch controls
+    let touchStartX = 0;
+    let touchStartY = 0;
+
     function safeGetText(key) {
         return (typeof getText === 'function') ? getText(key) : key;
     }
@@ -128,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         enemyUpdateTick++;
         if (enemyUpdateTick % 20 === 0) {
             enemies.forEach(en => {
-                // Sprawdzamy czy pająk ma zdefiniowaną oś, domyślnie 'x'
                 const axis = en.axis || 'x'; 
                 
                 let nextX = en.x;
@@ -140,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     nextY += en.dir;
                 }
 
-                // Sprawdzenie granic mapy
                 if (nextY < 0 || nextY >= grid.length || nextX < 0 || nextX >= grid[0].length) {
                     en.dir *= -1;
                     return;
@@ -148,16 +150,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let target = grid[nextY][nextX];
                 
-                // Obiekty kolizyjne: ściany, skrzynie, drzwi, wyjście, klucze, krew
                 const obstacles = ['#', 'B', 'D', 'E', 'K', 'S'];
                 
                 if (obstacles.includes(target)) { 
                     en.dir *= -1; 
-                    // Po odbiciu nie wykonujemy ruchu w tej klatce, by uniknąć drgań
                     return;
                 }
                 
-                // Wykonanie ruchu
                 en.x = nextX;
                 en.y = nextY;
                 
@@ -262,19 +261,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const restartLvlBtn = document.getElementById('restartLvlBtn');
-    if(restartLvlBtn) restartLvlBtn.addEventListener('click', die);
+    // --- MOBILE TOUCH CONTROLS (PRO) ---
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Prevent scrolling/zooming on canvas
+        if (e.touches.length > 0) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: false });
 
-    const restartGameBtn = document.getElementById('restartGameBtn');
-    if(restartGameBtn) restartGameBtn.addEventListener('click', () => triggerReset(true));
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (isGameOver || e.touches.length === 0) return;
 
-    const themeBtn = document.querySelector('.theme-switch');
-    if (themeBtn) themeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('light-mode');
-        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-        applyTranslations();
-    });
+        const touchEndX = e.touches[0].clientX;
+        const touchEndY = e.touches[0].clientY;
 
-    triggerReset(false);
-    update();
-});
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+
+        // Deadzone check (10px) to prevent jitter
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+            // Dominant axis detection for 4-way movement
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontal
+                if (dx > 0) startContinuousMove(1, 0);
+                else startContinuousMove(-1, 0);
+            } else {
+                //
