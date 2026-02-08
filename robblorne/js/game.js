@@ -1,11 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('gameCanvas');
+    // 1. BEZPIECZNE POBIERANIE ELEMENTÓW (Fix dla "gra się nie ładuje")
+    const canvas = document.getElementById('gameCanvas') || document.querySelector('canvas');
+    if (!canvas) {
+        console.error("CRITICAL ERROR: Nie znaleziono elementu <canvas>! Sprawdź index.html.");
+        alert("Błąd gry: Brak elementu Canvas. Gra nie może wystartować.");
+        return;
+    }
+
     const ctx = canvas.getContext('2d');
-    const titleElem = document.getElementById('game-title');
+    
+    // Pobieranie elementów UI z fallbackiem (zabezpieczenie przed nullem)
+    const titleElem = document.getElementById('game-title') || document.querySelector('h1') || { innerText: '', style: {} };
     const bloodValElem = document.getElementById('blood-val');
     const totalPointsElem = document.getElementById('total-points');
     const levelValElem = document.getElementById('level-val');
     const livesValElem = document.getElementById('lives-val');
+
+    // Sprawdzenie czy levels.js się załadował
+    if (typeof Levels === 'undefined') {
+        console.error("ERROR: Obiekt 'Levels' nie istnieje. Czy plik levels.js jest załadowany?");
+        if (titleElem.style) titleElem.innerText = "Error: Missing levels.js";
+        return;
+    }
 
     if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 
@@ -22,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDirection = { dx: 0, dy: 0 };
     let activeKey = null;
 
-    // Variables for touch controls
+    // Zmienne dla dotyku
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -37,45 +53,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function triggerReset(fullReset = false) {
-        isGameOver = false;
-        stopContinuousMove();
-        activeKey = null;
-        lastDirection = { dx: 0, dy: 0 };
-        
-        if (fullReset) {
-            currentLevelIndex = 0;
-            totalScore = 0;
-            lives = 5;
-            localStorage.setItem('totalScore', 0);
-            localStorage.setItem('currentLevel', 0);
-        }
-
-        const levelData = Levels[currentLevelIndex];
-        if (!levelData) return;
-
-        grid = levelData.map.map(row => row.split(''));
-        enemies = JSON.parse(JSON.stringify(levelData.enemies));
-        bloodCollected = 0; keys = 0; frame = 0;
-        bloodTotal = 0;
-        grid.forEach(row => row.forEach(cell => { if(cell === 'S') bloodTotal++; }));
-        
-        for(let y=0; y<grid.length; y++) {
-            for(let x=0; x<grid[y].length; x++) {
-                if(grid[y][x] === 'R') player = {x, y};
+        try {
+            isGameOver = false;
+            stopContinuousMove();
+            activeKey = null;
+            lastDirection = { dx: 0, dy: 0 };
+            
+            if (fullReset) {
+                currentLevelIndex = 0;
+                totalScore = 0;
+                lives = 5;
+                localStorage.setItem('totalScore', 0);
+                localStorage.setItem('currentLevel', 0);
             }
-        }
 
-        titleElem.innerText = safeGetText('gameTitle'); 
-        titleElem.style.color = "";
-        resizeCanvas();
-        updateUI();
+            if (currentLevelIndex >= Levels.length) currentLevelIndex = 0; // Zabezpieczenie indeksu
+
+            const levelData = Levels[currentLevelIndex];
+            if (!levelData) {
+                console.error("Błąd: Brak danych dla poziomu " + currentLevelIndex);
+                return;
+            }
+
+            grid = levelData.map.map(row => row.split(''));
+            // Głęboka kopia wrogów
+            enemies = levelData.enemies ? JSON.parse(JSON.stringify(levelData.enemies)) : [];
+            
+            bloodCollected = 0; keys = 0; frame = 0;
+            bloodTotal = 0;
+            grid.forEach(row => row.forEach(cell => { if(cell === 'S') bloodTotal++; }));
+            
+            player = null;
+            for(let y=0; y<grid.length; y++) {
+                for(let x=0; x<grid[y].length; x++) {
+                    if(grid[y][x] === 'R') player = {x, y};
+                }
+            }
+            if (!player) player = {x: 1, y: 1}; // Fallback jeśli brak startu
+
+            if(titleElem.style) {
+                titleElem.innerText = safeGetText('gameTitle'); 
+                titleElem.style.color = "";
+            }
+            resizeCanvas();
+            updateUI();
+        } catch (e) {
+            console.error("Błąd w triggerReset:", e);
+        }
     }
 
     function updateUI() {
         if(bloodValElem) bloodValElem.innerText = `${bloodCollected} / ${bloodTotal}`;
         if(totalPointsElem) totalPointsElem.innerText = totalScore;
         if(levelValElem) levelValElem.innerText = currentLevelIndex + 1;
-        if(livesValElem) livesValElem.innerText = "❤️".repeat(lives);
+        if(livesValElem) livesValElem.innerText = "❤️".repeat(Math.max(0, lives)); // Math.max zabezpiecza przed ujemną liczbą
         
         localStorage.setItem('totalScore', totalScore);
         localStorage.setItem('currentLevel', currentLevelIndex);
@@ -96,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isLight = document.body.classList.contains('light-mode');
         ctx.fillStyle = isLight ? "#e0e0e0" : "#0c0d11"; ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
         ctx.strokeStyle = isLight ? "#ccc" : "#1a1a1a"; ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
+        
         if (type === '#') {
             ctx.fillStyle = isLight ? "#bbb" : "#1a1e26"; ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
         } else if (type === 'R') { drawHunter(px, py); }
@@ -149,7 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 let target = grid[nextY][nextX];
-                
+                // Check bounds safety
+                if (!target) { en.dir *= -1; return; }
+
                 const obstacles = ['#', 'B', 'D', 'E', 'K', 'S'];
                 
                 if (obstacles.includes(target)) { 
@@ -173,13 +207,17 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
         if (lives <= 0) {
             isGameOver = true;
-            titleElem.innerText = safeGetText('msgGameOver');
-            titleElem.style.color = "red";
+            if(titleElem.style) {
+                titleElem.innerText = safeGetText('msgGameOver');
+                titleElem.style.color = "red";
+            }
             setTimeout(() => triggerReset(true), 2000);
         } else {
             isGameOver = true;
-            titleElem.innerText = safeGetText('msgDeath');
-            titleElem.style.color = "orange";
+            if(titleElem.style) {
+                titleElem.innerText = safeGetText('msgDeath');
+                titleElem.style.color = "orange";
+            }
             setTimeout(() => triggerReset(false), 1200);
         }
     }
@@ -191,8 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             isGameOver = true;
             stopContinuousMove();
-            titleElem.innerText = safeGetText('msgWin');
-            titleElem.style.color = "#c5a059";
+            if(titleElem.style) {
+                titleElem.innerText = safeGetText('msgWin');
+                titleElem.style.color = "#c5a059";
+            }
             setTimeout(() => triggerReset(true), 3000);
         }
     }
@@ -207,11 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function movePlayer(dx, dy) {
-        if (isGameOver) return;
+        if (isGameOver || !player) return;
         const nx = player.x + dx, ny = player.y + dy;
         if (!grid[ny] || !grid[ny][nx]) return; 
         if (enemies.some(en => en.x === nx && en.y === ny)) { die(); return; }
         const target = grid[ny][nx];
+        
         if (target === '.' || target === 'S' || target === 'K') {
             if (target === 'S') { bloodCollected++; totalScore++; }
             if (target === 'K') keys++;
@@ -261,18 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- MOBILE TOUCH CONTROLS (PRO) ---
+    // --- MOBILE TOUCH CONTROLS (Zabezpieczone) ---
     canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Prevent scrolling/zooming on canvas
-        if (e.touches.length > 0) {
+        // Blokujemy domyślne akcje tylko jeśli gra działa
+        if(e.cancelable) e.preventDefault(); 
+        if (e.touches && e.touches.length > 0) {
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
         }
     }, { passive: false });
 
     canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (isGameOver || e.touches.length === 0) return;
+        if(e.cancelable) e.preventDefault();
+        if (isGameOver || !e.touches || e.touches.length === 0) return;
 
         const touchEndX = e.touches[0].clientX;
         const touchEndY = e.touches[0].clientY;
@@ -280,12 +322,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const dx = touchEndX - touchStartX;
         const dy = touchEndY - touchStartY;
 
-        // Deadzone check (10px) to prevent jitter
+        // Deadzone 10px
         if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-            // Dominant axis detection for 4-way movement
             if (Math.abs(dx) > Math.abs(dy)) {
-                // Horizontal
                 if (dx > 0) startContinuousMove(1, 0);
                 else startContinuousMove(-1, 0);
             } else {
-                //
+                if (dy > 0) startContinuousMove(0, 1);
+                else startContinuousMove(0, -1);
+            }
+        }
+    }, { passive: false });
+
+    const handleTouchEnd = (e) => {
+        if(e.cancelable) e.preventDefault(); 
+        stopContinuousMove();
+    };
+
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchcancel', handleTouchEnd);
+    // -----------------------------------
+
+    // Bezpieczne podpięcie przycisków
+    const restartLvlBtn = document.getElementById('restartLvlBtn');
+    if(restartLvlBtn) restartLvlBtn.addEventListener('click', die);
+
+    const restartGameBtn = document.getElementById('restartGameBtn');
+    if(restartGameBtn) restartGameBtn.addEventListener('click', () => triggerReset(true));
+
+    const themeBtn = document.querySelector('.theme-switch');
+    if (themeBtn) themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    });
+
+    // START
+    triggerReset(false);
+    update();
+});
