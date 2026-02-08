@@ -1,7 +1,26 @@
 const Levels = [
-    // --- POZIOM 1: Przebudzenie (Tutorial) ---
+    // --- POZIOM 1: Korytarz Ciemności ---
     {
         id: 1,
+        map: [
+            "###############",
+            "#R.....S.....K#", // Góra: Start -> Krew -> Klucz (Bezpiecznie)
+            "#######.#######", // Ściana oddzielająca
+            "#.....S.......#", // Środek: Patrol pająka (Szeroko)
+            "#######.#######", // Ściana oddzielająca
+            "#S....D......E#", // Dół: Krew -> Drzwi (Blokada) -> Wyjście
+            "###############"
+        ],
+        enemies: [
+            // Jeden pająk chodzący po środkowym korytarzu lewo-prawo.
+            // Masz czas, żeby przebiec z góry na dół, gdy on jest daleko.
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }
+        ]
+    },
+
+    // --- POZIOM 2: Przebudzenie (Tutorial) ---
+    {
+        id: 2,
         map: [
             "#############", 
             "#R..B......S#", 
@@ -20,9 +39,9 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 2: Podwójne zagrożenie ---
+    // --- POZIOM 3: Podwójne zagrożenie ---
     {
-        id: 2,
+        id: 3,
         map: [
             "#############",
             "#S....#..B.S#",
@@ -37,25 +56,6 @@ const Levels = [
         enemies: [
             { x: 1, y: 1, dir: 1, icon: "🕷️", axis: 'x' },
             { x: 11, y: 7, dir: -1, icon: "🕷️", axis: 'x' }
-        ]
-    },
-
-    // --- POZIOM 3: Korytarz Ciemności ---
-    {
-        id: 3,
-        map: [
-            "###############",
-            "#R.....S.....K#", // Góra: Start -> Krew -> Klucz (Bezpiecznie)
-            "#######.#######", // Ściana oddzielająca
-            "#.....S.......#", // Środek: Patrol pająka (Szeroko)
-            "#######.#######", // Ściana oddzielająca
-            "#S....D......E#", // Dół: Krew -> Drzwi (Blokada) -> Wyjście
-            "###############"
-        ],
-        enemies: [
-            // Jeden pająk chodzący po środkowym korytarzu lewo-prawo.
-            // Masz czas, żeby przebiec z góry na dół, gdy on jest daleko.
-            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }
         ]
     },
 

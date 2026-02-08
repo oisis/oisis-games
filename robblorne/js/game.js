@@ -38,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDirection = { dx: 0, dy: 0 };
     let activeKey = null;
 
-    // Zmienne dla dotyku
-    let touchStartX = 0;
-    let touchStartY = 0;
+    // Zmienne dla dotyku (zmienione na null dla lepszej kontroli stanu)
+    let touchStartX = null;
+    let touchStartY = null;
 
     function safeGetText(key) {
         return (typeof getText === 'function') ? getText(key) : key;
@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
             stopContinuousMove();
             activeKey = null;
             lastDirection = { dx: 0, dy: 0 };
+            
+            // FIX: Reset input state to prevent ghost movement after level load
+            touchStartX = null;
+            touchStartY = null;
             
             if (fullReset) {
                 currentLevelIndex = 0;
@@ -314,7 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('touchmove', (e) => {
         if(e.cancelable) e.preventDefault();
-        if (isGameOver || !e.touches || e.touches.length === 0) return;
+        // FIX: Dodatkowe sprawdzenie touchStartX/Y w celu uniknięcia "duchów" z poprzedniego poziomu
+        if (isGameOver || !e.touches || e.touches.length === 0 || touchStartX === null || touchStartY === null) return;
 
         const touchEndX = e.touches[0].clientX;
         const touchEndY = e.touches[0].clientY;
@@ -337,6 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleTouchEnd = (e) => {
         if(e.cancelable) e.preventDefault(); 
         stopContinuousMove();
+        // Opcjonalnie resetujemy też tutaj, dla czystości
+        touchStartX = null;
+        touchStartY = null;
     };
 
     canvas.addEventListener('touchend', handleTouchEnd);
