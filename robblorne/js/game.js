@@ -1,24 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. BEZPIECZNE POBIERANIE ELEMENTÓW (Fix dla "gra się nie ładuje")
+    // 1. SAFE ELEMENT RETRIEVAL (Fix for "game not loading")
     const canvas = document.getElementById('gameCanvas') || document.querySelector('canvas');
     if (!canvas) {
-        console.error("CRITICAL ERROR: Nie znaleziono elementu <canvas>! Sprawdź index.html.");
-        alert("Błąd gry: Brak elementu Canvas. Gra nie może wystartować.");
+        console.error("CRITICAL ERROR: Canvas element not found! Check index.html.");
+        alert("Game Error: Canvas element not found. Game cannot start.");
         return;
     }
 
     const ctx = canvas.getContext('2d');
     
-    // Pobieranie elementów UI z fallbackiem (zabezpieczenie przed nullem)
+    // UI element retrieval with fallback (null protection)
     const titleElem = document.getElementById('game-title') || document.querySelector('h1') || { innerText: '', style: {} };
     const bloodValElem = document.getElementById('blood-val');
     const totalPointsElem = document.getElementById('total-points');
     const levelValElem = document.getElementById('level-val');
     const livesValElem = document.getElementById('lives-val');
 
-    // Sprawdzenie czy levels.js się załadował
+    // Check if levels.js is loaded
     if (typeof Levels === 'undefined') {
-        console.error("ERROR: Obiekt 'Levels' nie istnieje. Czy plik levels.js jest załadowany?");
+        console.error("ERROR: 'Levels' object does not exist. Is levels.js loaded?");
         if (titleElem.style) titleElem.innerText = "Error: Missing levels.js";
         return;
     }
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDirection = { dx: 0, dy: 0 };
     let activeKey = null;
 
-    // Zmienne dla dotyku (zmienione na null dla lepszej kontroli stanu)
+    // Touch variables (changed to null for better state control)
     let touchStartX = null;
     let touchStartY = null;
 
@@ -71,16 +71,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('currentLevel', 0);
             }
 
-            if (currentLevelIndex >= Levels.length) currentLevelIndex = 0; // Zabezpieczenie indeksu
+            if (currentLevelIndex >= Levels.length) currentLevelIndex = 0; // Index protection
 
             const levelData = Levels[currentLevelIndex];
             if (!levelData) {
-                console.error("Błąd: Brak danych dla poziomu " + currentLevelIndex);
+                console.error("Error: No data for level " + currentLevelIndex);
                 return;
             }
 
             grid = levelData.map.map(row => row.split(''));
-            // Głęboka kopia wrogów
+            // Deep copy of enemies
             enemies = levelData.enemies ? JSON.parse(JSON.stringify(levelData.enemies)) : [];
             
             bloodCollected = 0; keys = 0; frame = 0;
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(grid[y][x] === 'R') player = {x, y};
                 }
             }
-            if (!player) player = {x: 1, y: 1}; // Fallback jeśli brak startu
+            if (!player) player = {x: 1, y: 1}; // Fallback if no start position
 
             if(titleElem.style) {
                 titleElem.innerText = safeGetText('gameTitle'); 
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resizeCanvas();
             updateUI();
         } catch (e) {
-            console.error("Błąd w triggerReset:", e);
+            console.error("Error in triggerReset:", e);
         }
     }
 
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(bloodValElem) bloodValElem.innerText = `${bloodCollected} / ${bloodTotal}`;
         if(totalPointsElem) totalPointsElem.innerText = totalScore;
         if(levelValElem) levelValElem.innerText = currentLevelIndex + 1;
-        if(livesValElem) livesValElem.innerText = "❤️".repeat(Math.max(0, lives)); // Math.max zabezpiecza przed ujemną liczbą
+        if(livesValElem) livesValElem.innerText = "❤️".repeat(Math.max(0, lives)); // Math.max prevents negative numbers
         
         localStorage.setItem('totalScore', totalScore);
         localStorage.setItem('currentLevel', currentLevelIndex);
@@ -306,9 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- MOBILE TOUCH CONTROLS (Zabezpieczone) ---
+    // --- MOBILE TOUCH CONTROLS (Secured) ---
     canvas.addEventListener('touchstart', (e) => {
-        // Blokujemy domyślne akcje tylko jeśli gra działa
+        // Block default actions only if game is running
         if(e.cancelable) e.preventDefault(); 
         if (e.touches && e.touches.length > 0) {
             touchStartX = e.touches[0].clientX;
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('touchmove', (e) => {
         if(e.cancelable) e.preventDefault();
-        // FIX: Dodatkowe sprawdzenie touchStartX/Y w celu uniknięcia "duchów" z poprzedniego poziomu
+        // FIX: Additional check of touchStartX/Y to avoid "ghosts" from previous level
         if (isGameOver || !e.touches || e.touches.length === 0 || touchStartX === null || touchStartY === null) return;
 
         const touchEndX = e.touches[0].clientX;
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleTouchEnd = (e) => {
         if(e.cancelable) e.preventDefault(); 
         stopContinuousMove();
-        // Opcjonalnie resetujemy też tutaj, dla czystości
+        // Optionally reset here as well, for cleanliness
         touchStartX = null;
         touchStartY = null;
     };
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.addEventListener('touchcancel', handleTouchEnd);
     // -----------------------------------
 
-    // Bezpieczne podpięcie przycisków
+    // Safe button binding
     const restartLvlBtn = document.getElementById('restartLvlBtn');
     if(restartLvlBtn) restartLvlBtn.addEventListener('click', die);
 

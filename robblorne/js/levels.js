@@ -1,26 +1,7 @@
 const Levels = [
-    // --- POZIOM 1: Korytarz Ciemności ---
+    // --- LEVEL 1: Awakening (Tutorial) ---
     {
         id: 1,
-        map: [
-            "###############",
-            "#R.....S.....K#", // Góra: Start -> Krew -> Klucz (Bezpiecznie)
-            "#######.#######", // Ściana oddzielająca
-            "#.....S.......#", // Środek: Patrol pająka (Szeroko)
-            "#######.#######", // Ściana oddzielająca
-            "#S....D......E#", // Dół: Krew -> Drzwi (Blokada) -> Wyjście
-            "###############"
-        ],
-        enemies: [
-            // Jeden pająk chodzący po środkowym korytarzu lewo-prawo.
-            // Masz czas, żeby przebiec z góry na dół, gdy on jest daleko.
-            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }
-        ]
-    },
-
-    // --- POZIOM 2: Przebudzenie (Tutorial) ---
-    {
-        id: 2,
         map: [
             "#############", 
             "#R..B......S#", 
@@ -39,9 +20,9 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 3: Podwójne zagrożenie ---
+    // --- LEVEL 2: Double Threat ---
     {
-        id: 3,
+        id: 2,
         map: [
             "#############",
             "#S....#..B.S#",
@@ -59,48 +40,67 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 4: Magazyn Krwi (Puzzle ze skrzyniami) ---
+    // --- LEVEL 3: Corridor of Darkness ---
+    {
+        id: 3,
+        map: [
+            "###############",
+            "#R.....S.....K#", // Top: Start -> Blood -> Key (Safe)
+            "#######.#######", // Separating wall
+            "#.....S.......#", // Middle: Spider patrol (Wide)
+            "#######.#######", // Separating wall
+            "#S....D......E#", // Bottom: Blood -> Door (Block) -> Exit
+            "###############"
+        ],
+        enemies: [
+            // One spider walking left-right in the middle corridor.
+            // You have time to run from top to bottom when it is far away.
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }
+        ]
+    },
+
+    // --- LEVEL 4: Blood Warehouse (Box Puzzle) ---
     {
         id: 4,
         map: [
             "###########",
             "#R.......S#",
             "###.#####.#",
-            "#S..B.....#", // Ta skrzynia blokuje dostęp do dolnej części
+            "#S..B.....#", // This box blocks access to the lower part
             "###.###.###",
-            "#K..B...S.#", // Musisz przepchnąć tę skrzynię, by dostać się do K
+            "#K..B...S.#", // You must push this box to get to K
             "###.###.###",
             "#S....D..E#",
             "###########"
         ],
         enemies: [
             { x: 7, y: 4, dir: 1, icon: "🕷️", axis: 'y' }
-        ] // Skupiamy się na logice
+        ] // Focusing on logic
     },
 
-    // --- POZIOM 5: Zygzak Śmierci ---
+    // --- LEVEL 5: Zigzag of Death ---
     {
         id: 5,
         map: [
             "#############",
             "#R..........#",
             "#######.#####",
-            "#S...E#.....#", // Tutaj pająk 1 (lewa strona)
+            "#S...E#.....#", // Spider 1 here (left side)
             "#.##.##.###.##",
-            "#..S.......K#", // Tutaj pająk 2 (środek)
+            "#..S.......K#", // Spider 2 here (middle)
             "#.#########.##",
-            "#S....D..S..#", // Dół: Drzwi i Wyjście
+            "#S....D..S..#", // Bottom: Doors and Exit
             "#############"
         ],
         enemies: [
-            // Pająki mają teraz ograniczone trasy, nie blokują całej mapy
+            // Spiders now have limited routes, they don't block the whole map
             { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' },
             { x: 4, y: 5, dir: 1, icon: "🕷️", axis: 'x' },
             { x: 7, y: 3, dir: 1, icon: "🕷️", axis: 'y' }
         ]
     },
 
-    // --- POZIOM 6: Zamknięty Ogród ---
+    // --- LEVEL 6: Enclosed Garden ---
     {
         id: 6,
         map: [
@@ -113,19 +113,19 @@ const Levels = [
             "#####E#####"
         ],
         enemies: [
-            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }, // Pająk przechodzi przez środek (przez R)
+            { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' }, // Spider passes through the middle (through R)
             { x: 9, y: 3, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
-    // --- POZIOM 7: Labirynt Skrzyń ---
+    // --- LEVEL 7: Labyrinth of Boxes ---
     {
         id: 7,
         map: [
             "#############",
             "#R..B..S..B.#",
             "#...#..#..#.#",
-            "#B..B..K..B.#", // Dużo skrzyń do przesunięcia
+            "#B..B..K..B.#", // Many boxes to move
             "#######D#####",
             "#S..........#",
             "#######.#####",
@@ -137,7 +137,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 8: Arena ---
+    // --- LEVEL 8: Arena ---
     {
         id: 8,
         map: [
@@ -148,7 +148,7 @@ const Levels = [
             "#..S...R...S..#",
             "#.............#",
             "#.............#",
-            "#K...........E#", // Bez drzwi, ale trzeba zebrać krew uciekając
+            "#K...........E#", // No doors, but need to collect blood while escaping
             "###############"
         ],
         enemies: [
@@ -159,26 +159,26 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 9: Wąskie Gardło ---
+    // --- LEVEL 9: Bottleneck ---
     {
         id: 9,
         map: [
             "#############",
             "#R.S#S.S#S.K#",
             "###.#.#.#.###",
-            "#...........#", // Bardzo niebezpieczny korytarz
+            "#...........#", // Very dangerous corridor
             "###.#.#.#.###",
             "#S.S#S#S#S.E#",
             "#############"
         ],
         enemies: [
             { x: 1, y: 3, dir: 1, icon: "🕷️", axis: 'x' },
-            { x: 6, y: 3, dir: 1, icon: "🕷️", axis: 'x' }, // Dwa pająki w jednym rzędzie
+            { x: 6, y: 3, dir: 1, icon: "🕷️", axis: 'x' }, // Two spiders in one row
             { x: 11, y: 3, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
-    // --- POZIOM 10: Połowa Drogi (Większa mapa) ---
+    // --- LEVEL 10: Halfway (Larger map) ---
     {
         id: 10,
         map: [
@@ -199,7 +199,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 11: Szachownica ---
+    // --- LEVEL 11: Chessboard ---
     {
         id: 11,
         map: [
@@ -219,14 +219,14 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 12: Pułapka ---
+    // --- LEVEL 12: Trap ---
     {
         id: 12,
         map: [
             "#########",
             "#K.....S#",
             "#.#####.#",
-            "#.#R..#.#", // Gracz w środku
+            "#.#R..#.#", // Player in the middle
             "#.#.#.#.#",
             "#.#D#D#.#",
             "#S..E..S#",
@@ -237,7 +237,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 13: Długi Marsz ---
+    // --- LEVEL 13: The Long March ---
     {
         id: 13,
         map: [
@@ -259,7 +259,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 14: Symetria ---
+    // --- LEVEL 14: Symmetry ---
     {
         id: 14,
         map: [
@@ -277,7 +277,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 15: Jaskinie (Duża mapa) ---
+    // --- LEVEL 15: Caves (Large map) ---
     {
         id: 15,
         map: [
@@ -299,7 +299,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 16: Cztery Komnaty ---
+    // --- LEVEL 16: Four Chambers ---
     {
         id: 16,
         map: [
@@ -320,7 +320,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 17: Piekielny Labirynt ---
+    // --- LEVEL 17: Hellish Labyrinth ---
     {
         id: 17,
         map: [
@@ -340,7 +340,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 18: Strażnicy Mostu ---
+    // --- LEVEL 18: Bridge Guardians ---
     {
         id: 18,
         map: [
@@ -361,7 +361,7 @@ const Levels = [
         ]
     },
 
-    // --- POZIOM 19: Krypta ---
+    // --- LEVEL 19: The Crypt ---
     {
         id: 19,
         map: [
@@ -376,13 +376,13 @@ const Levels = [
             "###############"
         ],
         enemies: [
-            { x: 7, y: 5, dir: 1, icon: "🕷️", axis: 'x' }, // Pająk pilnujący środka
-            { x: 1, y: 7, dir: 1, icon: "🕷️", axis: 'x' }, // Dolny patrol
+            { x: 7, y: 5, dir: 1, icon: "🕷️", axis: 'x' }, // Spider guarding the middle
+            { x: 1, y: 7, dir: 1, icon: "🕷️", axis: 'x' }, // Lower patrol
             { x: 13, y: 7, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     },
 
-    // --- POZIOM 20: Katedra Koszmaru (Finał) ---
+    // --- LEVEL 20: Nightmare Cathedral (Finale) ---
     {
         id: 20,
         map: [
@@ -401,13 +401,13 @@ const Levels = [
             "###################"
         ],
         enemies: [
-            { x: 1, y: 2, dir: 1, icon: "🕷️", axis: 'x' },  // Górny rząd
+            { x: 1, y: 2, dir: 1, icon: "🕷️", axis: 'x' },  // Top row
             { x: 17, y: 2, dir: -1, icon: "🕷️", axis: 'x' },
             
-            { x: 5, y: 6, dir: 1, icon: "🕷️", axis: 'x' },  // Środek
+            { x: 5, y: 6, dir: 1, icon: "🕷️", axis: 'x' },  // Middle
             { x: 13, y: 6, dir: -1, icon: "🕷️", axis: 'x' },
 
-            { x: 1, y: 9, dir: 1, icon: "🕷️", axis: 'x' },  // Dół
+            { x: 1, y: 9, dir: 1, icon: "🕷️", axis: 'x' },  // Bottom
             { x: 17, y: 9, dir: -1, icon: "🕷️", axis: 'x' }
         ]
     }
