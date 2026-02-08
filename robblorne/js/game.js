@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+// Główna funkcja inicjalizująca grę
+const initGame = () => {
     // 1. SAFE ELEMENT RETRIEVAL (Fix for "game not loading")
     const canvas = document.getElementById('gameCanvas') || document.querySelector('canvas');
     if (!canvas) {
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDirection = { dx: 0, dy: 0 };
     let activeKey = null;
 
-    // Touch variables (changed to null for better state control)
+    // Touch variables
     let touchStartX = null;
     let touchStartY = null;
 
@@ -59,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
             activeKey = null;
             lastDirection = { dx: 0, dy: 0 };
             
-            // FIX: Reset input state to prevent ghost movement after level load
             touchStartX = null;
             touchStartY = null;
             
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('currentLevel', 0);
             }
 
-            if (currentLevelIndex >= Levels.length) currentLevelIndex = 0; // Index protection
+            if (currentLevelIndex >= Levels.length) currentLevelIndex = 0;
 
             const levelData = Levels[currentLevelIndex];
             if (!levelData) {
@@ -80,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             grid = levelData.map.map(row => row.split(''));
-            // Deep copy of enemies
             enemies = levelData.enemies ? JSON.parse(JSON.stringify(levelData.enemies)) : [];
             
             bloodCollected = 0; keys = 0; frame = 0;
@@ -93,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(grid[y][x] === 'R') player = {x, y};
                 }
             }
-            if (!player) player = {x: 1, y: 1}; // Fallback if no start position
+            if (!player) player = {x: 1, y: 1};
 
             if(titleElem.style) {
                 titleElem.innerText = safeGetText('gameTitle'); 
@@ -110,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(bloodValElem) bloodValElem.innerText = `${bloodCollected} / ${bloodTotal}`;
         if(totalPointsElem) totalPointsElem.innerText = totalScore;
         if(levelValElem) levelValElem.innerText = currentLevelIndex + 1;
-        if(livesValElem) livesValElem.innerText = "❤️".repeat(Math.max(0, lives)); // Math.max prevents negative numbers
+        if(livesValElem) livesValElem.innerText = "❤️".repeat(Math.max(0, lives));
         
         localStorage.setItem('totalScore', totalScore);
         localStorage.setItem('currentLevel', currentLevelIndex);
@@ -185,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 let target = grid[nextY][nextX];
-                // Check bounds safety
                 if (!target) { en.dir *= -1; return; }
 
                 const obstacles = ['#', 'B', 'D', 'E', 'K', 'S'];
@@ -306,9 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- MOBILE TOUCH CONTROLS (Secured) ---
+    // --- MOBILE TOUCH CONTROLS ---
     canvas.addEventListener('touchstart', (e) => {
-        // Block default actions only if game is running
         if(e.cancelable) e.preventDefault(); 
         if (e.touches && e.touches.length > 0) {
             touchStartX = e.touches[0].clientX;
@@ -318,7 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('touchmove', (e) => {
         if(e.cancelable) e.preventDefault();
-        // FIX: Additional check of touchStartX/Y to avoid "ghosts" from previous level
         if (isGameOver || !e.touches || e.touches.length === 0 || touchStartX === null || touchStartY === null) return;
 
         const touchEndX = e.touches[0].clientX;
@@ -327,7 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const dx = touchEndX - touchStartX;
         const dy = touchEndY - touchStartY;
 
-        // Deadzone 10px
         if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
             if (Math.abs(dx) > Math.abs(dy)) {
                 if (dx > 0) startContinuousMove(1, 0);
@@ -342,16 +337,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleTouchEnd = (e) => {
         if(e.cancelable) e.preventDefault(); 
         stopContinuousMove();
-        // Optionally reset here as well, for cleanliness
         touchStartX = null;
         touchStartY = null;
     };
 
     canvas.addEventListener('touchend', handleTouchEnd);
     canvas.addEventListener('touchcancel', handleTouchEnd);
-    // -----------------------------------
-
-    // Safe button binding
+    
+    // UI Buttons
     const restartLvlBtn = document.getElementById('restartLvlBtn');
     if(restartLvlBtn) restartLvlBtn.addEventListener('click', die);
 
@@ -367,4 +360,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // START
     triggerReset(false);
     update();
-});
+};
+
+// Zmiana sposobu startu, aby obsługiwać dynamiczne ładowanie
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+} else {
+    initGame();
+}

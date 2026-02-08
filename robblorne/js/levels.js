@@ -69,7 +69,7 @@ const Levels = [
             "#S..B.....#", // This box blocks access to the lower part
             "###.###.###",
             "#K..B...S.#", // You must push this box to get to K
-            "###.###.###",
+            "#######.###",
             "#S....D..E#",
             "###########"
         ],
